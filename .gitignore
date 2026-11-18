@@ -1,0 +1,141 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+.mobile-venv
+env/
+venv/
+.pytest_cache/
+
+# Databases
+*.db
+*.db-journal
+*.db-wal
+*.db.tmp
+
+# Media/Large files
+*.epub
+*.docx
+*.csv
+*.pdf
+*.xlsx
+NHJS_Backup_*.zip
+NHJS_N_backup
+
+# Data directory (working data files, not for version control)
+data/
+
+# Logs
+*.log
+
+# IDEs
+.vscode/
+.idea/
+
+# Nix
+result
+
+# Buildozer (mobile build)
+mobile/.buildozer/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Coverage
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Credentials (SECURITY)
+.git-credentials
+*_credentials*
+*.pem
+*.key
+
+# Debug files
+debug_*.txt
+debug_*.log
+git_*.txt
+git_*.sh
+
+# Temporary files
+*.tmp
+*.bak
+*.bak_working
+.~lock.*
+
+# Screenshots and images (development)
+jw_org_*.png
+
+# AI assistant files
+.aider.*
+.aider.tags.cache.v4/
+
+# Font files (large binaries, referenced from assets/)
+PT_Sans-*.ttf
+
+# Lock files
+*.lock
+
+# APK files (too large for repo)
+*.apk
+
+# Shell scripts for git operations (temporary)
+push_changes.sh
+PUSH_INSTRUCTIONS.md
+
+# Mobile build artifacts
+mobile/.buildozer/
+mobile/build.log
+mobile/buildozer_verbose.log
+mobile/buildozer_debug.log
+mobile/nhjs_test_report.log
+
+# Root-level __pycache__
+__pycache__/
+
+# Node & external tools
+node_modules/
+package.json
+package-lock.json
+
+# AI tools and cleanup leftovers
+.kilo/
+.claude/
+.human/
+_cleanup_trash/
+_check.log
+
+# Журнал падений приложения
+crash.log
+
+# Сборка под Android (PySide6)
+.android-venv/
+android/.buildozer/
+android/bin/
+android/scheduler.db
+android/dark_theme.qss
+android/*.apk
+android/deployment/
+android/pysidedeploy.spec
+android/build_src/
+android/.buildozer-stash/
+
+# Prove-It Mini / supertool (локальные файлы плагинов)
+AGENTS.md
+/supertool
+
+# Пароль SMTP и другие секреты (core/secret_store.py)
+*.secrets.json
+
+# Снимки базы перед авто-распределением месяца (core/db_snapshot.py)
+snapshots/
+
+# Язык интерфейса на этом устройстве (core/i18n.py)
+ui_language

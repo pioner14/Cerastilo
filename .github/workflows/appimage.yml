@@ -1,0 +1,82 @@
+name: AppImage
+
+# Только ручной запуск: Actions -> AppImage -> Run workflow
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Версия для имени файла (например 0.1.0)"
+        required: false
+        default: "dev"
+
+permissions:
+  contents: read
+
+jobs:
+  appimage:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      # Python 3.14 доступен в actions/setup-python (скачивается на ubuntu-22.04).
+      # Если его там не окажется — поставьте 3.13: зависимости совместимы.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Системные библиотеки для Qt (xcb)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
+            libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 \
+            libxcb-xkb1 libxkbcommon-x11-0 libxkbcommon0 libegl1 libgl1 \
+            libglib2.0-0 libdbus-1-3 libfontconfig1 libfreetype6 libxrender1 \
+            libsm6 libice6 libwayland-client0 libwayland-cursor0 \
+            libwayland-egl1 file
+
+      - name: Python-зависимости
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+
+      - name: PyInstaller (onedir)
+        run: pyinstaller --noconfirm packaging/pyinstaller/cerastilo.spec
+
+      - name: Проверка запуска
+        run: |
+          mkdir -p "$RUNNER_TEMP/smoke"
+          cd "$RUNNER_TEMP/smoke"
+          DB_PATH="$RUNNER_TEMP/smoke/scheduler.db" QT_QPA_PLATFORM=offscreen \
+            timeout 15 "$GITHUB_WORKSPACE/dist/cerastilo/cerastilo" || code=$?
+          # 124 = таймаут: окно жило 15 с, значит запуск удался
+          [ "${code:-0}" -eq 124 ] || [ "${code:-0}" -eq 0 ]
+
+      - name: Сборка AppDir
+        run: |
+          APPDIR=build/Cerastilo.AppDir
+          mkdir -p "$APPDIR/usr/lib" "$APPDIR/usr/share/doc/cerastilo"
+          cp -r dist/cerastilo "$APPDIR/usr/lib/cerastilo"
+          install -m755 packaging/appimage/AppRun "$APPDIR/AppRun"
+          install -m644 packaging/appimage/cerastilo.desktop "$APPDIR/cerastilo.desktop"
+          cp assets/icon-256.png "$APPDIR/cerastilo.png"
+          cp assets/icon-256.png "$APPDIR/.DirIcon"
+          cp LICENSE packaging/THIRD_PARTY.md "$APPDIR/usr/share/doc/cerastilo/"
+
+      - name: appimagetool -> AppImage
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          curl -fsSL -o appimagetool \
+            https://github.com/AppImage/appimagetool/releases/download/1.9.0/appimagetool-x86_64.AppImage
+          chmod +x appimagetool
+          # FUSE на раннерах нет — запускаем с распаковкой
+          ARCH=x86_64 ./appimagetool --appimage-extract-and-run \
+            build/Cerastilo.AppDir "Cerastilo-${VERSION:-dev}-x86_64.AppImage"
+          ls -lh Cerastilo-*.AppImage
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Cerastilo-${{ inputs.version }}-x86_64.AppImage
+          path: Cerastilo-*.AppImage
+          if-no-files-found: error

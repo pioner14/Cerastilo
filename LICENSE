@@ -1,0 +1,85 @@
+Cerastilo Source-Available License
+
+Copyright (c) 2026 pioner14. All rights reserved.
+
+Software: Cerastilo, a scheduler for the "Life and Ministry" meeting
+(source code, documentation and official builds; the "Software").
+
+This is NOT an open-source license. The source code is published so that
+it can be read and checked; all rights not expressly granted below are
+reserved by the author.
+
+1) Viewing. Anyone may view and read the source code in the official
+   repository https://github.com/pioner14/cerastilo.
+
+2) Use of official builds. Anyone may download and use, free of charge,
+   the official builds published by the author (GitHub releases, the AUR
+   package "cerastilo", the official Android APK), including use by
+   congregations and other organizations.
+
+3) Personal build. You may build the Software from the official source
+   code, including with minimal build-time patches needed only for
+   packaging or compatibility (as in the AUR PKGBUILD), solely for your own
+   use or that of your congregation or organization, without distributing
+   the build. Local configuration changes and bug fixes made for such
+   private use and not shared with anyone are permitted.
+
+4) Prohibited without prior written permission of the author:
+   distributing modified versions or any modifications; creating
+   derivative works for distribution; redistributing the source code or
+   binaries; repackaging or publishing the Software in other stores or
+   repositories; sublicensing; selling; using the code, in whole or in
+   part, in other projects. Forks created through GitHub's interface under
+   the GitHub Terms of Service may be used for viewing only. The name
+   "Cerastilo" may not be used for modified or third-party builds.
+
+5) Contributions. By submitting a contribution (pull request, patch,
+   translation, etc.) you grant the author a perpetual, irrevocable,
+   worldwide, royalty-free right to use, modify and relicense it.
+
+6) Third-party components. This license applies only to the author's own
+   code. Qt / PySide6 (LGPL-3.0) and other third-party libraries remain
+   under their own licenses. Nothing here restricts your rights under
+   those licenses, including modifying and replacing the LGPL libraries
+   bundled in the builds and reverse engineering the Software to the
+   extent required to debug such modifications. License texts for bundled
+   libraries accompany the official builds.
+
+7) Permissions. Requests for permission are sent in writing via GitHub
+   Issues of the official repository or the contact address listed in its
+   README. A permission is effective only if given in writing by the
+   author.
+
+8) NO WARRANTY. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+   KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+   DEALINGS IN THE SOFTWARE.
+
+9) Termination. Any breach of this license terminates the rights granted
+   to you. Upon termination you must stop using the Software and delete
+   all copies of the author's code in your possession. This does not
+   affect rights under third-party licenses. The author may reinstate
+   rights in writing.
+
+--- Краткое изложение на русском (не имеет юридической силы; действует английский текст) ---
+
+1. Исходный код можно смотреть в официальном репозитории. Это не открытая
+   лицензия: все права, кроме перечисленных, принадлежат автору.
+2. Официальные сборки (GitHub, пакет AUR, APK) можно бесплатно скачивать и
+   использовать, в том числе собраниям и организациям.
+3. Собрать программу из официального исходника (в том числе через AUR, с
+   мелкими патчами сборки) можно только для себя или своего собрания, не
+   раздавая сборку. Личные правки без передачи другим допустимы.
+4. Без письменного разрешения автора нельзя: раздавать изменённые версии,
+   распространять исходники и сборки, выкладывать в другие магазины и
+   репозитории, продавать, использовать код в других проектах. Форк на
+   GitHub — только для просмотра. Имя Cerastilo нельзя ставить на чужие сборки.
+5. Присылая правку, вы даёте автору бессрочное право её использовать.
+6. Лицензия касается только кода автора; Qt/PySide6 (LGPL-3.0) и другие
+   библиотеки остаются под своими лицензиями, их права не ограничиваются.
+7. Разрешение — только письменное, через GitHub Issues или контакт из README.
+8. Программа предоставляется «как есть», без гарантий.
+9. При нарушении права прекращаются, копии кода автора нужно удалить.

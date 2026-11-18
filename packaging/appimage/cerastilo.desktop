@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Cerastilo
+GenericName=Планировщик собраний
+Comment=Расписание встречи «Жизнь и служение»: назначения, письма, экспорт
+Exec=cerastilo
+Icon=cerastilo
+Terminal=false
+Type=Application
+Categories=Office;
+StartupWMClass=cerastilo
