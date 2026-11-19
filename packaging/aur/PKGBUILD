@@ -20,8 +20,7 @@ depends=(
   'hicolor-icon-theme'
 )
 source=("$pkgname-$pkgver.tar.gz::https://github.com/pioner14/Cerastilo/archive/refs/tags/v$pkgver.tar.gz")
-# Заглушка: после создания тега v$pkgver выполните `updpkgsums`.
-sha256sums=('SKIP')
+sha256sums=('d13b81fb462222c90efea4c168127770445cfcf730d8af35c7d7e48875e96bcd')
 
 package() {
   cd "$srcdir"/*-"$pkgver" || return 1
