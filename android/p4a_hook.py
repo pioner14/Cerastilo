@@ -3,6 +3,8 @@
 before_apk_build вызывается в папке dist перед Gradle, когда исходники Java
 бутстрапа уже скопированы, — правим их здесь.
 """
+import os
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 # До super.onCreate(): Qt проверяет переменную, когда создаёт окно Activity, —
@@ -44,3 +46,24 @@ def before_apk_build(toolchain):
     text = patch_back_key(text)
     if text != original:
         java.write_text(text, encoding="utf-8")
+
+
+def before_apk_assemble(toolchain):
+    if os.environ.get("CERASTILO_BUILD_MODE") != "release":
+        return
+
+    libs = Path("src/main/res/values/libs.xml")
+    tree = ET.parse(libs)
+    local_libs = tree.find("./array[@name='load_local_libs']")
+    if local_libs is None:
+        return
+
+    # Android извлекает из APK без режима отладки только библиотеки lib*.so.
+    removed = False
+    for item in local_libs.findall("item"):
+        _, separator, filename = (item.text or "").strip().partition(";")
+        if separator and filename and not filename.startswith("lib"):
+            local_libs.remove(item)
+            removed = True
+    if removed:
+        tree.write(libs, encoding="utf-8", xml_declaration=True)

@@ -103,6 +103,7 @@ def _create_executable_with_hook(mode):
         extra += "android.release_artifact = apk\n"
     if extra:
         spec.write_text(text.replace("[app]\n", f"[app]\n{extra}", 1), encoding="utf-8")
+    os.environ["CERASTILO_BUILD_MODE"] = mode
     _original_create_executable(mode)
 
 

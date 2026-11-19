@@ -6,7 +6,7 @@
 
 * **AUR (Arch Linux).** Выполните `yay -S cerastilo`.
 * **AppImage (Linux).** Выполните `chmod +x Cerastilo-*.AppImage` и запустите файл двойным щелчком. Данные по умолчанию хранятся в `~/.local/share/cerastilo`.
-* **Windows.** Распакуйте ZIP и запустите `cerastilo.exe`. Данные по умолчанию хранятся в `%LOCALAPPDATA%\Cerastilo`. Сборка на Windows пока не проверялась.
+* **Windows.** Распакуйте ZIP и запускайте `cerastilo.exe`; остальные файлы в этой папке не трогайте и не удаляйте. Данные хранятся в `%LOCALAPPDATA%\Cerastilo`.
 
 ## 1. Компьютер на Linux
 

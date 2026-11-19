@@ -68,7 +68,7 @@ Cerastilo is a desktop and Android tablet scheduler for the "Life and Ministry" 
 
 * **AUR (Arch Linux).** Run `yay -S cerastilo`.
 * **AppImage (Linux).** Run `chmod +x Cerastilo-*.AppImage`, then double-click the file to launch it. Data is stored in `~/.local/share/cerastilo` by default.
-* **Windows.** Extract the ZIP and launch `cerastilo.exe`. Data is stored in `%LOCALAPPDATA%\Cerastilo` by default. The build has yet to be tested on Windows.
+* **Windows.** Extract the ZIP and launch `cerastilo.exe`; keep the other files in that folder together and do not delete them. Data is stored in `%LOCALAPPDATA%\Cerastilo`.
 
 PC–tablet Wi-Fi sync is unencrypted. Use it only on a trusted home network.
 
