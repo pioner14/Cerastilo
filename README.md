@@ -1,81 +1,155 @@
-# Cerastilo
+<p align="center"><a href="#ru">Русский</a> | <a href="#en">English</a></p>
 
-Планировщик встреч «Жизнь и служение»: одно приложение на PySide6 для компьютера (Linux) и Android-планшета.
+<div align="center">
+  <img src="assets/icon-256.png" width="128" alt="Cerastilo">
+  <h1>Cerastilo</h1>
+  <p>Бесплатный планировщик встречи «Христианская жизнь и служение» для компьютера и Android-планшета.</p>
+  <p>
+    <a href="https://github.com/pioner14/Cerastilo/releases/latest"><img src="https://img.shields.io/github/v/release/pioner14/Cerastilo?label=release" alt="Последний релиз"></a>
+    <img src="https://img.shields.io/badge/platforms-Linux%20%7C%20Windows%20%7C%20Android-blue" alt="Linux | Windows | Android">
+    <a href="LICENSE"><img src="https://img.shields.io/badge/license-source--available-blue" alt="Лицензия source-available"></a>
+    <a href="https://github.com/pioner14/Cerastilo/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/pioner14/Cerastilo/ci.yml?label=CI" alt="CI"></a>
+  </p>
+  <p><a href="https://cerastilo.com">Сайт</a> · <a href="https://github.com/pioner14/Cerastilo/releases/latest">Скачать</a> · <a href="docs/help/ru/guide.md">Руководство</a></p>
+</div>
 
-## Что умеет
+<a name="ru"></a>
 
-* **«🏠 Сегодня»** — пульт руководителя встречи: список неотложных дел (отказы, пустые пункты, неотправленные уведомления) и карточка ближайшей встречи с ответами участников.
-* **«📅 Расписание»** — дерево дат (Год → Месяц → Неделя), таблица недели и доска месяца; ручной выбор и замена участников, подсказки о конфликтах, правка длительности, сортировка строк перетаскиванием, внеочередные пункты.
-* **Авто-распределение** недели и месяца («🪄 Авто») с учётом квалификаций, духовного статуса, пола, интервалов отдыха, отпусков и сменного графика; для месяца — с автоматическим снимком базы и откатом.
-* **«👥 Возвещатели»** — база участников с поиском, сортировкой и цветовой индикацией; карточка с квалификациями, семьёй, личным интервалом, отпуском, сменным графиком, email и телефоном.
-* **«🕒 История»** и **«📊 Статистика»** — хронология назначений возвещателя, тепловая карта выступлений и графики нагрузки по категориям заданий.
-* **«📚 Тетради»** — импорт программы встреч из рабочих тетрадей (EPUB) с автоматической раскладкой по неделям.
-* **Email-уведомления** — массовая и индивидуальная рассылка с шаблонами и предпросмотром, журнал отправки, экспорт заданий в календарь (.ics), автоматическая проверка ответов «Подтвердил» / «Не сможет».
-* **Экспорт и печать** — расписание в PDF, TXT и Word (.docx); генерация бланков S-89 по неделям и на весь месяц.
-* **Особые события недели** — «🍷 Вечеря Господня», «🏟️ Районный конгресс», «🌍 Региональный конгресс», «👔 Посещение районного старейшины (РС)».
-* **Отмена и возврат** — Undo/Redo в неделе, откат пакетного распределения месяца к снимку базы.
-* **«⚙️ Настройки»** — параметры собрания, тема оформления, модули, импорт истории из NW Scheduler и контактов из Excel, резервное копирование, синхронизация ПК ↔ планшет по Wi-Fi.
+## О программе
+
+Cerastilo — неофициальное приложение для планирования встречи «Христианская жизнь и служение». Версии для компьютера и Android-планшета работают самостоятельно. Расписание доступно офлайн, данные хранятся в локальной базе SQLite, а синхронизацию по Wi-Fi можно использовать по желанию. Интерфейс доступен на русском и английском.
+
+## Возможности
+
+- **Доска месяца и автораспределение.** Учитывает квалификацию, пол, интервалы между назначениями и отпуска. Заполняет только пустые пункты. Результат можно отменить одним нажатием.
+- **Экран «Сегодня».** Ближайшая встреча, срочные дела и список тех, кто ещё не получил уведомление или не ответил.
+- **Возвещатели и история.** Карточки с контактами, квалификацией, сведениями о семье и отпусках. Видно, кто с кем уже выступал в паре.
+- **Статистика нагрузки.** Графики по категориям показывают, кто часто получает назначения и кто давно не участвовал.
+- **Рабочие тетради.** Импорт скачанного вами EPUB из официального источника с автоматической разбивкой программы по неделям.
+- **Печать, экспорт и уведомления.** Расписание в PDF и Word, бланки S-89, письма участникам с календарным файлом `.ics`.
 
 ## Скриншоты
 
-![Расписание недели](docs/help/ru/screenshots/raspisanie.png)
+<table>
+  <tr>
+    <td width="50%"><img src="docs/help/ru/screenshots/mesyac.png" alt="Доска месяца"><br>Доска месяца</td>
+    <td width="50%"><img src="docs/help/ru/screenshots/segodnya.png" alt="Экран «Сегодня»"><br>Экран «Сегодня»</td>
+  </tr>
+  <tr>
+    <td><img src="docs/help/ru/screenshots/vozveshchateli.png" alt="Возвещатели"><br>Возвещатели</td>
+    <td><img src="docs/help/ru/screenshots/statistika.png" alt="Статистика нагрузки"><br>Статистика нагрузки</td>
+  </tr>
+</table>
 
-![Доска месяца](docs/help/ru/screenshots/mesyac.png)
+## Установка из готовых сборок
 
-Остальные экраны — в [руководстве пользователя](docs/help/ru/guide.md). На снимках демо-база с выдуманными именами.
+ZIP, AppImage и APK ищите на странице [последнего релиза](https://github.com/pioner14/Cerastilo/releases/latest).
 
-## Быстрый старт на Linux
+- **Linux.** На Arch Linux установите пакет из AUR командой `yay -S cerastilo`. Для AppImage выполните в папке загрузки `chmod +x Cerastilo-*.AppImage`, затем откройте файл двойным щелчком.
+- **Windows.** Распакуйте ZIP целиком и запустите `cerastilo.exe`. Остальные файлы в распакованной папке не перемещайте и не удаляйте. Данные хранятся в `%LOCALAPPDATA%\Cerastilo`.
+- **Android-планшеты (arm64).** Установите APK. Если у вас стоит тестовая сборка, сначала выгрузите из неё данные, затем удалите её и установите APK начисто.
 
-```bash
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
-./start.sh
-```
+## Синхронизация ПК ↔ планшет
 
+Подключите оба устройства к одной сети Wi-Fi. Откройте синхронизацию на планшете и введите на компьютере показанные планшетом адрес и шестисимвольный код. При объединении баз сохраняется более свежая правка. Перед слиянием приложение сохраняет резервную копию.
 
-## Android
-
-Сборка APK для arm64-планшетов, установка и особенности работы — в [`docs/INSTALL.md`](docs/INSTALL.md).
-
-## Планы
-
-**В планах: macOS и iOS.** Cerastilo уже работает на Linux, Windows и Android. Версии для Mac, iPhone и iPad тоже в планах, но для разработки и проверки под них нужны устройства Apple, которых у меня пока нет. Пожертвования помогут их приобрести и ускорят появление этих версий.
+**Данные передаются без шифрования. Синхронизируйте устройства только в доверенной домашней сети.**
 
 ## Документация
 
-* [`docs/help/ru/guide.md`](docs/help/ru/guide.md) — полное руководство пользователя: каждая функция, шаги и правила.
-* [`docs/INSTALL.md`](docs/INSTALL.md) — установка, в том числе на Android-планшет.
-* [`CONTRIBUTING.md`](CONTRIBUTING.md) — как участвовать в разработке.
-* [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — устройство программы для разработчиков.
+- [Руководство](docs/help/ru/guide.md)
+- [Быстрый старт](docs/help/ru/quick_start.md)
+- [Установка](docs/INSTALL.md)
 
-## Технологии
+## Планы
 
-| Компонент | Технология |
-|---|---|
-| Язык | Python 3 |
-| Интерфейс | PySide6 6.12 (Qt 6) |
-| База данных | SQLite |
-| ORM и миграции | SQLAlchemy 2.x + Alembic |
-| Импорт тетрадей | zipfile + BeautifulSoup, lxml |
-| Экспорт в Word | python-docx |
-| Платформы | Linux (десктоп), Android-планшеты (arm64) |
+Cerastilo уже работает на Linux, Windows и Android. Версии для Mac (macOS), iPhone и iPad (iOS) тоже в планах, но для разработки и проверки под них нужны устройства Apple, которых у автора пока нет. Пожертвования помогут их приобрести и ускорят появление этих версий.
+
+## Поддержать проект
+
+Cerastilo делает один человек в свободное время. Приложение бесплатное. Если оно вам помогает, вы можете поддержать разработку добровольным пожертвованием.
+
+PayPal · [5 €](https://paypal.me/NikolaiGolotaistrov/5EUR) · [Своя сумма](https://paypal.me/NikolaiGolotaistrov)
 
 ## Лицензия
 
-Код открыт только для просмотра (source-available), это не open source. Официальные сборки можно бесплатно скачивать и использовать, в том числе собраниям. Изменять, распространять, перепаковывать и продавать без письменного разрешения автора нельзя. Полный текст — в [`LICENSE`](LICENSE).
+Cerastilo распространяется по лицензии source-available. Исходный код доступен для ознакомления, а официальными сборками можно пользоваться бесплатно. Условия использования и распространения описаны в [LICENSE](LICENSE).
 
-## In English
+---
 
-Cerastilo is a desktop and Android tablet scheduler for the "Life and Ministry" meeting, built with Python 3 and PySide6 (Qt 6), with SQLite via SQLAlchemy and Alembic. It covers the whole scheduling workflow: participant database, EPUB workbook import, rule-based auto-assignment for a week or a month, manual edits, email notifications and reply tracking, PDF/TXT/DOCX export and S-89 forms, plus Wi-Fi sync between PC and tablet. The source code is available for viewing only (source-available, not open source); official builds are free to use, everything else requires the author's written permission — see [`LICENSE`](LICENSE).
+<a name="en"></a>
 
-### Installation
+<div align="center">
+  <h2>Cerastilo</h2>
+  <p>A free scheduler for the Christian Life &amp; Ministry meeting on computers and Android tablets.</p>
+  <p><a href="https://cerastilo.com">Website</a> · <a href="https://github.com/pioner14/Cerastilo/releases/latest">Download</a> · <a href="docs/help/en/guide.md">User guide</a></p>
+</div>
 
-* **AUR (Arch Linux).** Run `yay -S cerastilo`.
-* **AppImage (Linux).** Run `chmod +x Cerastilo-*.AppImage`, then double-click the file to launch it. Data is stored in `~/.local/share/cerastilo` by default.
-* **Windows.** Extract the ZIP and launch `cerastilo.exe`; keep the other files in that folder together and do not delete them. Data is stored in `%LOCALAPPDATA%\Cerastilo`.
+## About
 
-PC–tablet Wi-Fi sync is unencrypted. Use it only on a trusted home network.
+Cerastilo is an unofficial app for planning the Christian Life & Ministry meeting. The computer and Android tablet versions work independently. Your schedule is available offline, your data is stored in a local SQLite database, and Wi-Fi sync is optional. The interface is available in English and Russian.
 
-[User guide](docs/help/en/guide.md) · [Quick start](docs/help/en/quick_start.md) · [Installation notes, including Android (Russian)](docs/INSTALL.md)
+## Features
 
-**Planned: macOS and iOS.** Cerastilo already runs on Linux, Windows, and Android. I also plan to bring it to Mac, iPhone, and iPad, but I need Apple devices to develop and test those versions, and I don’t have them yet. Donations will help me buy the devices and release those versions sooner.
+- **Monthly board and auto-assignment.** Takes qualifications, gender, rest intervals, and vacations into account. Fills only empty items and can be undone with one click.
+- **Today screen.** See the upcoming meeting, urgent tasks, and who still needs to be notified or has yet to reply.
+- **Publishers and assignment history.** View profiles with contact details, qualifications, family information, and vacations. See who has already worked together as a pair.
+- **Workload statistics.** Charts by assignment category show who gets frequent assignments and who has gone a while without one.
+- **Workbooks.** Import an EPUB you downloaded from the official source. The app organizes the program by week.
+- **Printing, export, and notifications.** Export schedules to PDF and Word, print S-89 forms, and email participants an `.ics` calendar file.
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/help/ru/screenshots/mesyac.png" alt="Monthly board"><br>Monthly board</td>
+    <td width="50%"><img src="docs/help/ru/screenshots/segodnya.png" alt="Today screen"><br>Today screen</td>
+  </tr>
+  <tr>
+    <td><img src="docs/help/ru/screenshots/vozveshchateli.png" alt="Publishers"><br>Publishers</td>
+    <td><img src="docs/help/ru/screenshots/statistika.png" alt="Workload statistics"><br>Workload statistics</td>
+  </tr>
+</table>
+
+## Installing official builds
+
+Look for the ZIP, AppImage, and APK on the [latest release page](https://github.com/pioner14/Cerastilo/releases/latest).
+
+- **Linux.** On Arch Linux, install the AUR package with `yay -S cerastilo`. For the AppImage, run `chmod +x Cerastilo-*.AppImage` in your download folder, then double-click the file to launch it.
+- **Windows.** Extract the entire ZIP and launch `cerastilo.exe`. Keep the other files in the extracted folder and do not move or delete them. Data is stored in `%LOCALAPPDATA%\Cerastilo`.
+- **Android tablets (arm64).** Install the APK. If you have a test build installed, export your data first, then uninstall that build and install the APK from scratch.
+
+## Computer ↔ tablet sync
+
+Connect both devices to the same Wi-Fi network. Open the sync dialog on the tablet, then enter its address and six-character code on the computer. The most recent edit wins when the databases are merged. The app saves a backup before merging.
+
+**Data is transferred without encryption. Sync only on a trusted home network.**
+
+## Documentation
+
+- [User guide](docs/help/en/guide.md)
+- [Quick start](docs/help/en/quick_start.md)
+- [Installation](docs/INSTALL.md)
+
+## Plans
+
+Cerastilo already runs on Linux, Windows, and Android. Versions for Mac (macOS), iPhone, and iPad (iOS) are planned. The developer needs Apple devices to develop and test these versions and does not have them yet. Donations will help purchase the devices and release those versions sooner.
+
+## Support the project
+
+Cerastilo is developed by one person in their spare time. The app is free. If it helps you, you can support development with an optional donation.
+
+PayPal · [€5](https://paypal.me/NikolaiGolotaistrov/5EUR) · [Custom amount](https://paypal.me/NikolaiGolotaistrov)
+
+## License
+
+Cerastilo uses a source-available license. You can review the source code and use official builds free of charge. See [LICENSE](LICENSE) for the terms of use and redistribution.
+
+<details>
+<summary>Для разработчиков / For developers</summary>
+
+Инструкции по сборке из исходников · [docs/INSTALL.md](docs/INSTALL.md)
+
+Build instructions · [docs/INSTALL.md](docs/INSTALL.md)
+
+</details>
