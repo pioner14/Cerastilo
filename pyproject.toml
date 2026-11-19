@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "LicenseRef-Cerastilo"}
 authors = [
-    {name = "pioner14"}
+    {name = "Nikolai Golotaistrov"}
 ]
 keywords = ["schedule", "management", "pyside6", "desktop"]
 

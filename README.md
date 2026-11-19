@@ -98,6 +98,8 @@ Cerastilo распространяется по лицензии source-availabl
 
 </details>
 
+<p align="center"><sub>© 2026 Николай Голотайстров · Cerastilo</sub></p>
+
 ---
 
 <a name="en"></a>
@@ -190,3 +192,5 @@ Build instructions · [docs/INSTALL.md](docs/INSTALL.md)
 - **Export.** PDF via Qt, DOCX, S-89 forms, and emails with `.ics` calendar attachments.
 
 </details>
+
+<p align="center"><sub>© 2026 Nikolai Golotaistrov · Cerastilo</sub></p>
