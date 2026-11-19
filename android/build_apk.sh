@@ -70,6 +70,13 @@ if [ -f pysidedeploy.spec ]; then
     sed -i "s/^arch = .*/arch = $ARCH/" pysidedeploy.spec
     # значок APK — печать Cerastilo (иначе остаётся стандартный значок PySide)
     sed -i "s|^icon = .*|icon = $ROOT/assets/icon.png|" pysidedeploy.spec
+    # RELEASE=1 — сборка без режима отладки (android:debuggable=false), APK без подписи;
+    # подписать: bash android/sign_release.sh <apk>. По умолчанию — отладочная.
+    if [ "${RELEASE:-}" = 1 ]; then
+        sed -i "s/^mode = debug$/mode = release/" pysidedeploy.spec
+    else
+        sed -i "s/^mode = release$/mode = debug/" pysidedeploy.spec
+    fi
 fi
 # pyside6-android-deploy сам стирает кэш .buildozer при каждом запуске —
 # запускаем его через обёртку, которая кэш сохраняет

@@ -97,6 +97,10 @@ def _create_executable_with_hook(mode):
         for pattern in ("other_builds/PySide6", "python-installs/*/*/PySide6"):
             for built in base.glob(f".buildozer/android/platform/build-*/build/{pattern}"):
                 shutil.rmtree(built, ignore_errors=True)
+    # release: buildozer по умолчанию собирает .aab — нам нужен .apk (без подписи,
+    # подписывает android/sign_release.sh)
+    if mode == "release" and "android.release_artifact" not in text:
+        extra += "android.release_artifact = apk\n"
     if extra:
         spec.write_text(text.replace("[app]\n", f"[app]\n{extra}", 1), encoding="utf-8")
     _original_create_executable(mode)
