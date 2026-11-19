@@ -47,7 +47,7 @@ ZIP, AppImage и APK ищите на странице [последнего ре
 
 - **Linux.** На Arch Linux установите пакет из AUR командой `yay -S cerastilo`. Для AppImage выполните в папке загрузки `chmod +x Cerastilo-*.AppImage`, затем откройте файл двойным щелчком.
 - **Windows.** Распакуйте ZIP целиком и запустите `cerastilo.exe`. Остальные файлы в распакованной папке не перемещайте и не удаляйте. Данные хранятся в `%LOCALAPPDATA%\Cerastilo`.
-- **Android-планшеты (arm64).** Установите APK. Если у вас стоит тестовая сборка, сначала выгрузите из неё данные, затем удалите её и установите APK начисто.
+- **Android-планшеты (arm64).** Установите APK.
 
 ## Синхронизация ПК ↔ планшет
 
@@ -117,7 +117,7 @@ Look for the ZIP, AppImage, and APK on the [latest release page](https://github.
 
 - **Linux.** On Arch Linux, install the AUR package with `yay -S cerastilo`. For the AppImage, run `chmod +x Cerastilo-*.AppImage` in your download folder, then double-click the file to launch it.
 - **Windows.** Extract the entire ZIP and launch `cerastilo.exe`. Keep the other files in the extracted folder and do not move or delete them. Data is stored in `%LOCALAPPDATA%\Cerastilo`.
-- **Android tablets (arm64).** Install the APK. If you have a test build installed, export your data first, then uninstall that build and install the APK from scratch.
+- **Android tablets (arm64).** Install the APK.
 
 ## Computer ↔ tablet sync
 
