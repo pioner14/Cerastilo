@@ -139,3 +139,9 @@ snapshots/
 
 # Язык интерфейса на этом устройстве (core/i18n.py)
 ui_language
+
+# Ключи подписи APK — только вне репозитория
+*.jks
+*.keystore
+*.p12
+cerastilo-signing/

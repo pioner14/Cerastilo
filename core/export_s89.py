@@ -6,7 +6,6 @@ Implements: spec://export/s89#layout
 """
 
 import logging
-import os
 from datetime import timedelta
 from sqlalchemy import select, and_, or_
 
@@ -20,8 +19,6 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_ROW_HEIGHT_RULE, WD_CELL_VERTICAL_ALIGNMENT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-
-DB_PATH = os.path.join(os.path.dirname(__file__), "..", "scheduler.db")
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
 [project]
 name = "cerastilo"
-version = "1.0.0"
+version = "0.1.0"
 description = "NHJS Schedule Manager - Application for managing meeting schedules"
 readme = "README.md"
 requires-python = ">=3.11"

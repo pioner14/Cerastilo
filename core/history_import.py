@@ -32,7 +32,8 @@ def import_history_from_csv(csv_path):
 
     conn = None
     try:
-        conn = sqlite3.connect(DB_PATH)
+        # На Android база в папке данных и передаётся через DB_PATH (как в backup_logic)
+        conn = sqlite3.connect(os.environ.get("DB_PATH") or DB_PATH)
         cursor = conn.cursor()
 
         # 1. Загружаем маппинг участников (имя -> id)
