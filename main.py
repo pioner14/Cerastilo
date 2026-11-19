@@ -1,4 +1,10 @@
+import os
 import sys
+
+if sys.platform == "win32" and getattr(sys, "frozen", False) and "DB_PATH" not in os.environ:
+    data_dir = os.path.join(os.environ["LOCALAPPDATA"], "Cerastilo")
+    os.makedirs(data_dir, exist_ok=True)
+    os.environ["DB_PATH"] = os.path.join(data_dir, "scheduler.db")
 
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (

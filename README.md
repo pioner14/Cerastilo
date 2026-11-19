@@ -62,4 +62,14 @@ python3 -m venv .venv
 
 ## In English
 
-Cerastilo is a desktop and Android tablet scheduler for the "Life and Ministry" meeting, built with Python 3 and PySide6 (Qt 6), with SQLite via SQLAlchemy and Alembic. It covers the whole scheduling workflow: participant database, EPUB workbook import, rule-based auto-assignment for a week or a month, manual edits, email notifications and reply tracking, PDF/TXT/DOCX export and S-89 forms, plus Wi-Fi sync between PC and tablet. The full user manual is in [`docs/help/ru/guide.md`](docs/help/ru/guide.md); installation notes, including Android, are in [`docs/INSTALL.md`](docs/INSTALL.md). The source code is available for viewing only (source-available, not open source); official builds are free to use, everything else requires the author's written permission — see [`LICENSE`](LICENSE).
+Cerastilo is a desktop and Android tablet scheduler for the "Life and Ministry" meeting, built with Python 3 and PySide6 (Qt 6), with SQLite via SQLAlchemy and Alembic. It covers the whole scheduling workflow: participant database, EPUB workbook import, rule-based auto-assignment for a week or a month, manual edits, email notifications and reply tracking, PDF/TXT/DOCX export and S-89 forms, plus Wi-Fi sync between PC and tablet. The source code is available for viewing only (source-available, not open source); official builds are free to use, everything else requires the author's written permission — see [`LICENSE`](LICENSE).
+
+### Installation
+
+* **AUR (Arch Linux).** Run `yay -S cerastilo`.
+* **AppImage (Linux).** Run `chmod +x Cerastilo-*.AppImage`, then double-click the file to launch it. Data is stored in `~/.local/share/cerastilo` by default.
+* **Windows.** Extract the ZIP and launch `cerastilo.exe`. Data is stored in `%LOCALAPPDATA%\Cerastilo` by default. The build has yet to be tested on Windows.
+
+PC–tablet Wi-Fi sync is unencrypted. Use it only on a trusted home network.
+
+[User guide](docs/help/en/guide.md) · [Quick start](docs/help/en/quick_start.md) · [Installation notes, including Android (Russian)](docs/INSTALL.md)

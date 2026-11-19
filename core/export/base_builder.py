@@ -7,6 +7,7 @@
 
 from abc import ABC, abstractmethod
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from docx import Document
 from docx.enum.table import WD_ALIGN_VERTICAL
@@ -17,6 +18,9 @@ from docx.shared import Pt
 
 from core.export.compact_layout import SPECIAL_EVENT_MESSAGES, SPECIAL_EVENT_TITLES, parse_date
 from core.i18n import _
+
+if TYPE_CHECKING:
+    from docx.table import Table
 
 
 class BaseTableBuilder(ABC):

@@ -1,14 +1,14 @@
 [project]
 name = "cerastilo"
 version = "0.1.0"
-description = "NHJS Schedule Manager - Application for managing meeting schedules"
+description = "Планировщик встреч «Жизнь и служение»"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "LicenseRef-Cerastilo"}
 authors = [
-    {name = "NHJS Team"}
+    {name = "pioner14"}
 ]
-keywords = ["schedule", "management", "pyqt", "desktop"]
+keywords = ["schedule", "management", "pyside6", "desktop"]
 
 [tool.black]
 line-length = 100

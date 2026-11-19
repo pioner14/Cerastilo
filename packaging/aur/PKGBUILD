@@ -4,7 +4,7 @@ pkgver=0.1.0
 pkgrel=1
 pkgdesc="Scheduler for the Life and Ministry meeting: assignments, letters, export (PySide6)"
 arch=('any')
-url="https://github.com/pioner14/cerastilo"
+url="https://github.com/pioner14/Cerastilo"
 license=('LicenseRef-Cerastilo')
 depends=(
   'python'
@@ -16,13 +16,14 @@ depends=(
   'python-beautifulsoup4'
   'python-lxml'
   'python-docx'
+  'python-openpyxl'
 )
-source=("$pkgname-$pkgver.tar.gz::https://github.com/pioner14/cerastilo/archive/refs/tags/v$pkgver.tar.gz")
+source=("$pkgname-$pkgver.tar.gz::https://github.com/pioner14/Cerastilo/archive/refs/tags/v$pkgver.tar.gz")
 # Заглушка: после создания тега v$pkgver выполните `updpkgsums`.
 sha256sums=('SKIP')
 
 package() {
-  cd "$srcdir/$pkgname-$pkgver"
+  cd "$srcdir"/*-"$pkgver" || return 1
 
   local app="$pkgdir/usr/share/$pkgname"
   install -d "$app" "$app/docs"

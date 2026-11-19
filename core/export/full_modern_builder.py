@@ -9,6 +9,7 @@
 """
 
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING
 
 from docx import Document
 from docx.enum.table import WD_ALIGN_VERTICAL, WD_ROW_HEIGHT_RULE
@@ -21,6 +22,9 @@ from core.export.base_builder import BaseTableBuilder
 from core.export.filename import month_names
 from core.i18n import _, language
 from core.week_layout import counsel_minutes
+
+if TYPE_CHECKING:
+    from docx.table import Table
 
 
 class FullModernTableBuilder(BaseTableBuilder):

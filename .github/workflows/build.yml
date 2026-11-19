@@ -1,11 +1,13 @@
-name: Build Binaries
+name: Сборка для Windows
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version tag for build'
-        required: false
+        description: Версия для имени архива
+        required: true
+        default: '0.1.0'
+        type: string
 
 concurrency:
   group: build-${{ github.ref }}
@@ -13,44 +15,30 @@ concurrency:
 
 jobs:
   build:
-    name: Build on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
-
+    runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11' 
-        
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pyinstaller Pillow
+      - uses: actions/checkout@v4
 
-    - name: Build with PyInstaller
-      run: |
-        pyinstaller nhjs.spec
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: x64
 
-    - name: Rename executable (Windows)
-      if: runner.os == 'Windows'
-      run: mv dist/NHJS_N.exe dist/NHJS_N_Windows.exe
+      - name: Установка зависимостей
+        run: pip install -r requirements.txt pyinstaller
 
-    - name: Rename executable (Linux)
-      if: runner.os == 'Linux'
-      run: mv dist/NHJS_N dist/NHJS_N_Linux
+      - name: Сборка PyInstaller
+        run: python -m PyInstaller --noconfirm packaging/pyinstaller/cerastilo.spec
 
-    - name: Rename executable (macOS)
-      if: runner.os == 'macOS'
-      run: mv dist/NHJS_N dist/NHJS_N_macOS
+      - name: Упаковка ZIP
+        shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: Compress-Archive -Path dist/cerastilo -DestinationPath "Cerastilo-$env:RELEASE_VERSION-windows-x64.zip"
 
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: NHJS_N_${{ matrix.os }}
-        path: dist/NHJS_N*
+      - name: Загрузка артефакта
+        uses: actions/upload-artifact@v4
+        with:
+          name: Cerastilo-${{ inputs.version }}-windows-x64
+          path: Cerastilo-${{ inputs.version }}-windows-x64.zip
+          if-no-files-found: error

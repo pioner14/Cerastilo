@@ -8,6 +8,8 @@
 См. spec://export/docx#compact-v2-builder
 """
 
+from typing import TYPE_CHECKING
+
 from docx import Document
 from docx.enum.table import WD_ALIGN_VERTICAL, WD_ROW_HEIGHT_RULE, WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -25,6 +27,9 @@ from core.export.compact_layout import (
     build_week_layout,
     name_column_cm,
 )
+
+if TYPE_CHECKING:
+    from docx.table import Table
 
 
 class CompactV2TableBuilder(BaseTableBuilder):

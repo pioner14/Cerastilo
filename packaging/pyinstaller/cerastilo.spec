@@ -1,8 +1,9 @@
 # -*- mode: python ; coding: utf-8 -*-
-# Сборка Cerastilo в папку (onedir): Qt-библиотеки остаются отдельными .so
+# Сборка Cerastilo в папку (onedir): библиотеки Qt остаются отдельными файлами
 # (LGPL — их можно заменить). Запуск из корня репозитория:
 #   pyinstaller --noconfirm packaging/pyinstaller/cerastilo.spec
 import os
+import sys
 
 from PyInstaller.utils.hooks import collect_submodules
 
@@ -58,5 +59,6 @@ exe = EXE(
     strip=False,
     upx=False,
     console=False,
+    icon=p("assets", "icon.ico") if sys.platform == "win32" else None,
 )
 coll = COLLECT(exe, a.binaries, a.datas, strip=False, upx=False, name="cerastilo")
