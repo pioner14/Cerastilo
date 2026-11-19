@@ -75,6 +75,29 @@ PayPal · [5 €](https://paypal.me/NikolaiGolotaistrov/5EUR) · [Своя су�
 
 Cerastilo распространяется по лицензии source-available. Исходный код доступен для ознакомления, а официальными сборками можно пользоваться бесплатно. Условия использования и распространения описаны в [LICENSE](LICENSE).
 
+<details>
+<summary>Для разработчиков</summary>
+
+Инструкции по сборке из исходников · [docs/INSTALL.md](docs/INSTALL.md)
+
+### Технологии
+
+- Python 3.11+ и PySide6 6.12.0 (Qt 6.12).
+- SQLite через SQLAlchemy (`>=2.0.0,<3.0`, в APK — `2.1.5`) и Alembic (`>=1.13.0,<2.0`).
+- python-docx (`>=1.1.0,<2.0`), lxml (`>=5.0.0,<7.0`), BeautifulSoup (`beautifulsoup4>=4.12.0,<5.0`), openpyxl (`>=3.1.0,<4.0`).
+- Pillow (`>=10.0.0,<13.0`) и requests (`>=2.31.0,<3.0`).
+- PyInstaller для Windows и Linux AppImage, pyside6-android-deploy и python-for-android для APK, GitHub Actions для проверок и сборок Windows и AppImage.
+
+**Архитектура**
+
+- **Ядро (`core/`).** Логика приложения и правила распределения заданий.
+- **Интерфейс (`ui/`).** Общие виджеты Qt для ПК и планшета.
+- **База.** SQLite с миграциями Alembic на ПК и отдельными миграциями на Android.
+- **Синхронизация.** Планшет запускает HTTP-сервер в локальной сети, ПК подключается как клиент. При слиянии участников и назначений учитывается время последней правки.
+- **Экспорт.** PDF через Qt, DOCX, бланки S-89, письма с календарём `.ics`.
+
+</details>
+
 ---
 
 <a name="en"></a>
@@ -146,10 +169,24 @@ PayPal · [€5](https://paypal.me/NikolaiGolotaistrov/5EUR) · [Custom amount](
 Cerastilo uses a source-available license. You can review the source code and use official builds free of charge. See [LICENSE](LICENSE) for the terms of use and redistribution.
 
 <details>
-<summary>Для разработчиков / For developers</summary>
-
-Инструкции по сборке из исходников · [docs/INSTALL.md](docs/INSTALL.md)
+<summary>For developers</summary>
 
 Build instructions · [docs/INSTALL.md](docs/INSTALL.md)
+
+### Tech stack
+
+- Python 3.11+ and PySide6 6.12.0 (Qt 6.12).
+- SQLite via SQLAlchemy (`>=2.0.0,<3.0`, pinned to `2.1.5` for the APK) and Alembic (`>=1.13.0,<2.0`).
+- python-docx (`>=1.1.0,<2.0`), lxml (`>=5.0.0,<7.0`), BeautifulSoup (`beautifulsoup4>=4.12.0,<5.0`), openpyxl (`>=3.1.0,<4.0`).
+- Pillow (`>=10.0.0,<13.0`) and requests (`>=2.31.0,<3.0`).
+- PyInstaller for Windows and Linux AppImage, pyside6-android-deploy and python-for-android for APKs, GitHub Actions for CI and Windows and AppImage builds.
+
+**Architecture**
+
+- **Core (`core/`).** Application logic and assignment rules.
+- **Interface (`ui/`).** Shared Qt widgets for desktop and tablet.
+- **Database.** SQLite with Alembic migrations on desktop and separate migrations on Android.
+- **Sync.** The tablet runs an HTTP server on the local network, and the desktop connects as a client. Publisher and assignment merges use the last edit time.
+- **Export.** PDF via Qt, DOCX, S-89 forms, and emails with `.ics` calendar attachments.
 
 </details>
