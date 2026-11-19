@@ -37,6 +37,10 @@ python3 -m venv .venv
 
 Сборка APK для arm64-планшетов, установка и особенности работы — в [`docs/INSTALL.md`](docs/INSTALL.md).
 
+## Планы
+
+**В планах: macOS и iOS.** Cerastilo уже работает на Linux, Windows и Android. Версии для Mac, iPhone и iPad тоже в планах, но для разработки и проверки под них нужны устройства Apple, которых у меня пока нет. Пожертвования помогут их приобрести и ускорят появление этих версий.
+
 ## Документация
 
 * [`docs/help/ru/guide.md`](docs/help/ru/guide.md) — полное руководство пользователя: каждая функция, шаги и правила.
@@ -73,3 +77,5 @@ Cerastilo is a desktop and Android tablet scheduler for the "Life and Ministry" 
 PC–tablet Wi-Fi sync is unencrypted. Use it only on a trusted home network.
 
 [User guide](docs/help/en/guide.md) · [Quick start](docs/help/en/quick_start.md) · [Installation notes, including Android (Russian)](docs/INSTALL.md)
+
+**Planned: macOS and iOS.** Cerastilo already runs on Linux, Windows, and Android. I also plan to bring it to Mac, iPhone, and iPad, but I need Apple devices to develop and test those versions, and I don’t have them yet. Donations will help me buy the devices and release those versions sooner.
