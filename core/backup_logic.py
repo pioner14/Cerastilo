@@ -65,12 +65,34 @@ def restore_backup(zip_path, db_path=None):
         # Делаем бэкап текущей перед заменой (на всякий случай)
         if os.path.exists(db_path):
             shutil.copy2(db_path, db_path + ".old")
-        os.replace(temp_path, db_path)
+        try:
+            os.replace(temp_path, db_path)
+        except PermissionError:
+            # Windows не даёт подменить базу, открытую программой (WinError 5):
+            # копируем содержимое внутрь через sqlite backup — это работает
+            # и при открытых соединениях.
+            _sqlite_copy(temp_path, db_path)
+            os.remove(temp_path)
         return {"success": True}
     except Exception as e:
         if os.path.exists(temp_path):
             os.remove(temp_path)
         return {"success": False, "error": str(e)}
+
+
+def _sqlite_copy(src_path, dest_path):
+    """Копирует базу SQLite целиком через backup API (dest перезаписывается)."""
+    import sqlite3
+
+    src = sqlite3.connect(src_path)
+    try:
+        dest = sqlite3.connect(dest_path)
+        try:
+            src.backup(dest)
+        finally:
+            dest.close()
+    finally:
+        src.close()
 
 
 REQUIRED_TABLES = ("participants", "weeks", "assignments")

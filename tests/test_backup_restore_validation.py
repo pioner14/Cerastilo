@@ -142,3 +142,36 @@ def test_restore_corrupted_sqlite_does_not_change_db(tmp_path, monkeypatch):
     assert db_path.read_bytes() == before
     assert not Path(f"{db_path}.restore-tmp").exists()
     assert not Path(f"{db_path}.old").exists()
+
+
+def test_restore_into_open_database(tmp_path, monkeypatch):
+    """Windows не даёт подменить открытый файл базы (WinError 5): восстановление
+    пишет содержимое внутрь базы, и уже открытое соединение видит новые данные."""
+    db_path = tmp_path / "scheduler.db"
+    monkeypatch.setenv("DB_PATH", str(db_path))
+    make_db(db_path, REQUIRED_TABLES)
+
+    source_db = tmp_path / "source.db"
+    make_db(source_db, REQUIRED_TABLES)
+    src = sqlite3.connect(source_db)
+    src.execute("INSERT INTO participants (id) VALUES (7)")
+    src.commit()
+    src.close()
+    zip_path = tmp_path / "backup.zip"
+    _zip_file(zip_path, "scheduler.db", source_db)
+
+    import core.backup_logic as backup_logic
+
+    def windows_replace(src, dst):  # как на Windows: открытый файл не подменить
+        raise PermissionError(5, "Отказано в доступе")
+
+    monkeypatch.setattr(backup_logic.os, "replace", windows_replace)
+    live = sqlite3.connect(db_path)  # программа держит базу открытой
+    try:
+        assert live.execute("SELECT count(*) FROM participants").fetchone()[0] == 0
+        assert restore_backup(str(zip_path))["success"] is True
+        assert live.execute("SELECT id FROM participants").fetchall() == [(7,)]
+    finally:
+        live.close()
+    assert not (tmp_path / "scheduler.db.restore-tmp").exists()
+    assert (tmp_path / "scheduler.db.old").exists()
