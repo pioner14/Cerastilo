@@ -59,8 +59,9 @@ class TestSettingsDefaults:
 class TestSettingsLoad:
     """Tests for Settings.load() method."""
 
-    def test_load_returns_settings(self):
+    def test_load_returns_settings(self, tmp_path, monkeypatch):
         """Test that load returns Settings instance."""
+        monkeypatch.chdir(tmp_path)
         settings = Settings.load()
         assert isinstance(settings, Settings)
 

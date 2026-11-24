@@ -6,19 +6,24 @@ if sys.platform == "win32" and getattr(sys, "frozen", False) and "DB_PATH" not i
     os.makedirs(data_dir, exist_ok=True)
     os.environ["DB_PATH"] = os.path.join(data_dir, "scheduler.db")
 
-from PySide6.QtGui import QKeySequence, QShortcut
+from PySide6.QtCore import QTimer, QUrl, Qt
+from PySide6.QtGui import QDesktopServices, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
+    QMessageBox,
     QTabWidget,
     QToolButton,
     QVBoxLayout,
     QWidget,
 )
 
+from core import update_check
 from core.container import Container
 from core.events import Event
 from core.styles import Theme, ThemeManager, apply_theme
+from core.version import APP_VERSION
+from core.workers import TaskWorker
 from ui.assignment_config_view import AssignmentConfigView
 from ui.history_view import HistoryView
 from ui.leader_dashboard_view import LeaderDashboardView
@@ -33,6 +38,7 @@ class MainWindow(QMainWindow):
     def __init__(self, facade, container=None):
         super().__init__()
         self.facade = facade
+        self._update_worker = None
 
         self.setWindowTitle(_("Cerastilo - Планировщик Встреч"))
         self.resize(1280, 800)
@@ -107,6 +113,50 @@ class MainWindow(QMainWindow):
 
         # Centralized Error Handling
         self.facade.events.subscribe(Event.ERROR_OCCURRED, self._on_error)
+
+    def schedule_update_check(self) -> None:
+        if "PYTEST_CURRENT_TEST" not in os.environ:
+            QTimer.singleShot(3000, self, self._check_updates)
+
+    def _check_updates(self) -> None:
+        if not self.isVisible() or not update_check.should_auto_check():
+            return
+        self._update_worker = TaskWorker(update_check.fetch_latest)
+        self._update_worker.finished.connect(self._show_update_notice)
+        self._update_worker.start()
+
+    def _show_update_notice(self, result: dict) -> None:
+        if "version" not in result:
+            return
+        update_check.mark_checked()
+        version = result["version"]
+        if not self.isVisible() or not update_check.is_newer(version, APP_VERSION):
+            return
+        notice = QMessageBox(self)
+        notice.setWindowTitle(_("⬆️ Обновления"))
+        notice.setIcon(QMessageBox.Icon.Information)
+        notice.setText(
+            _(
+                "Доступна новая версия Cerastilo {v}. Сейчас установлена {current}.",
+                v=version,
+                current=APP_VERSION,
+            )
+        )
+        download = notice.addButton(_("Скачать"), QMessageBox.ButtonRole.ActionRole)
+        later = notice.addButton(_("Позже"), QMessageBox.ButtonRole.RejectRole)
+        notice.setDefaultButton(later)
+        notice.setEscapeButton(later)
+        notice.buttonClicked.connect(
+            lambda button: button == download and QDesktopServices.openUrl(QUrl(result["url"]))
+        )
+        notice.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        notice.setModal(False)
+        notice.show()
+
+    def wait_for_update_checks(self) -> None:
+        if self._update_worker is not None:
+            self._update_worker.wait()
+        self.settings_view.wait_for_update_check()
 
     def _open_workbooks(self) -> None:
         """«Настройки» → раздел «📚 Рабочие тетради» (импорт EPUB)."""
@@ -188,6 +238,7 @@ def _shutdown(app, window, container) -> None:
 
     from core.events import reset_event_bus
 
+    window.wait_for_update_checks()
     bus = getattr(container, "event_bus", None)
     handlers = getattr(bus, "_handlers", None)
     if isinstance(handlers, dict):
@@ -225,9 +276,6 @@ def main() -> int:
     # Отключаем нативные диалоговые окна ОС во избежание зависаний/блокировок на Linux/NixOS
     import traceback
 
-    from PySide6.QtCore import Qt
-    from PySide6.QtWidgets import QMessageBox
-
     app.setAttribute(Qt.ApplicationAttribute.AA_DontUseNativeDialogs, True)
 
     container = None
@@ -258,6 +306,7 @@ def main() -> int:
 
         window = MainWindow(facade=container.facade, container=container)
         window.show()
+        window.schedule_update_check()
         code = app.exec()
         _shutdown(app, window, container)
         return code

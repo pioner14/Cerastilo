@@ -27,12 +27,15 @@ from PySide6.QtWidgets import (
     QListWidget,
 )
 import datetime
+from html import escape
 
 from core.utils.android_storage import is_android
 from ui.file_dialogs import get_open_file_name, get_save_file_name
-from core import donate
+from core import donate, update_check
 from core.i18n import _, tr
 from core.notification_service import meeting_day_display
+from core.version import APP_VERSION
+from core.workers import TaskWorker
 from PySide6.QtCore import QUrl
 from PySide6.QtGui import QDesktopServices
 
@@ -238,10 +241,14 @@ class SettingsView(QWidget):
         sync_group = QGroupBox(_("🔄 Синхронизация ПК ↔ планшет"))
         sync_layout = QVBoxLayout()
         if is_android():
-            sync_hint = _("Показать адрес и код для ПК: ПК заберёт расписание, объединит и вернёт (по Wi-Fi).")
+            sync_hint = _(
+                "Показать адрес и код для ПК: ПК заберёт расписание, объединит и вернёт (по Wi-Fi)."
+            )
             sync_text = _("🔄 Синхронизировать с ПК")
         else:
-            sync_hint = _("Забрать расписание с планшета, объединить с этим и вернуть на планшет (по Wi-Fi).")
+            sync_hint = _(
+                "Забрать расписание с планшета, объединить с этим и вернуть на планшет (по Wi-Fi)."
+            )
             sync_text = _("🔄 Синхронизация с планшетом")
         sync_label = QLabel(sync_hint)
         sync_label.setWordWrap(True)
@@ -328,6 +335,8 @@ class SettingsView(QWidget):
         email_group.setLayout(email_layout)
         self.layout.addWidget(email_group)
 
+        self.layout.addWidget(self._build_updates_group())
+
         # === Поддержать проект ===
         donate_group = QGroupBox(_("❤️ Поддержать проект"))
         donate_layout = QVBoxLayout()
@@ -371,6 +380,57 @@ class SettingsView(QWidget):
         self._build_section_nav()
 
         self._load_settings()
+
+    def _build_updates_group(self) -> QGroupBox:
+        group = QGroupBox(_("⬆️ Обновления"))
+        layout = QVBoxLayout(group)
+        layout.addWidget(QLabel(_("Версия: {v}", v=APP_VERSION)))
+
+        self._update_worker = None
+        self.btn_check_updates = QPushButton(_("Проверить обновления"))
+        self.btn_check_updates.clicked.connect(self._check_updates)
+        layout.addWidget(self.btn_check_updates)
+
+        auto_check = QCheckBox(_("Проверять автоматически при запуске (не чаще раза в день)"))
+        auto_check.setChecked(update_check.auto_check_enabled())
+        auto_check.toggled.connect(update_check.set_auto_check)
+        layout.addWidget(auto_check)
+
+        self.update_result = QLabel()
+        self.update_result.setWordWrap(True)
+        self.update_result.setOpenExternalLinks(True)
+        layout.addWidget(self.update_result)
+        return group
+
+    def _check_updates(self) -> None:
+        if self._update_worker is not None and self._update_worker.isRunning():
+            return
+        self.btn_check_updates.setEnabled(False)
+        self.update_result.clear()
+        self._update_worker = TaskWorker(update_check.fetch_latest)
+        self._update_worker.finished.connect(self._show_update_result)
+        self._update_worker.start()
+
+    def _show_update_result(self, result: dict) -> None:
+        self.btn_check_updates.setEnabled(True)
+        if "version" not in result:
+            self.update_result.setText(
+                _("Не удалось проверить обновления. Проверьте подключение к интернету.")
+            )
+            return
+        update_check.mark_checked()
+        version = result["version"]
+        if update_check.is_newer(version, APP_VERSION):
+            message = _("Доступна версия {v}", v=version)
+            download = _("Скачать")
+            url = escape(result["url"], quote=True)
+            self.update_result.setText(f'{escape(message)} <a href="{url}">{escape(download)}</a>')
+        else:
+            self.update_result.setText(_("Установлена последняя версия"))
+
+    def wait_for_update_check(self) -> None:
+        if self._update_worker is not None:
+            self._update_worker.wait()
 
     def _load_settings(self) -> None:
         """Загружает настройки из фасада."""

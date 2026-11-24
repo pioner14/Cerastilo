@@ -14,7 +14,11 @@ from core.sync_service import (
     MAX_FAILED_ATTEMPTS,
     SyncClientError,
     SyncServer,
+    download_database,
+    format_sync_code,
     generate_sync_code,
+    normalize_sync_code,
+    psk_supported,
     parse_server_address,
     replace_database,
     sync_with_tablet,
@@ -27,18 +31,29 @@ def _free_port() -> int:
         return s.getsockname()[1]
 
 
+requires_psk = pytest.mark.skipif(not psk_supported(), reason="Нет TLS-PSK")
+
+
 @pytest.fixture
 def server(tmp_path):
     """Сервер синхронизации на «планшете» с базой из _tablet_db."""
     tablet_db = _tablet_db(tmp_path)
     code = generate_sync_code()
-    port = _free_port()
-    srv = SyncServer(tablet_db, code, port=port, host="127.0.0.1")
+    statuses = []
+    srv = SyncServer(tablet_db, code, port=0, host="127.0.0.1", on_status_change=statuses.append)
     srv.bind()
     thread = threading.Thread(target=srv.start, daemon=True)
     thread.start()
-    yield {"address": f"127.0.0.1:{port}", "code": code, "tablet_db": tablet_db}
-    srv.stop()
+    try:
+        yield {
+            "address": f"127.0.0.1:{srv.port}",
+            "code": code,
+            "tablet_db": tablet_db,
+            "httpd": srv.httpd,
+            "statuses": statuses,
+        }
+    finally:
+        srv.stop()
 
 
 def _pc_db(tmp_path):
@@ -65,10 +80,34 @@ def _setting(path, key):
         conn.close()
 
 
-def test_code_is_short_and_unambiguous():
+def test_code_is_unambiguous():
     code = generate_sync_code()
-    assert len(code) == 6
+    assert len(code) == 12
     assert not set(code) & set("01OI")
+
+
+def test_normalize_and_format_code():
+    assert normalize_sync_code(" abcd-efgh jk mn ") == "ABCDEFGHJKMN"
+    assert format_sync_code("abcdefghjkmn") == "ABCD-EFGH-JKMN"
+
+
+def test_code_store(tmp_path):
+    from core.sync_code_store import load_sync_code, save_sync_code
+
+    db = tmp_path / "pc.db"
+    assert load_sync_code(db) == ""
+    save_sync_code(db, "abcd-efgh-jkmn")
+    assert load_sync_code(db) == "ABCDEFGHJKMN"
+    stored = tmp_path / "sync_code"
+    if os.name == "posix":
+        assert stored.stat().st_mode & 0o777 == 0o600
+    save_sync_code(db, "23456789ABCD")
+    assert load_sync_code(db) == "23456789ABCD"
+    stored.write_bytes(b"\xff")
+    assert load_sync_code(db) == ""
+    inaccessible_db = tmp_path / "missing" / "pc.db"
+    save_sync_code(inaccessible_db, "ABCDEFGHJKMN")
+    assert load_sync_code(inaccessible_db) == ""
 
 
 def test_parse_address_defaults_port():
@@ -76,12 +115,22 @@ def test_parse_address_defaults_port():
     assert parse_server_address(" http://192.168.1.5:9000/sync ") == ("192.168.1.5", 9000)
 
 
+@requires_psk
 def test_sync_merges_tablet_into_pc_and_sends_back(server, tmp_path):
     pc = _pc_db(tmp_path)
+    db = DatabaseManager(pc)
+    with db.get_session() as session:
+        session.add(Participant(name="Участник с ПК"))
+        session.commit()
+    db.close()
 
-    sync_with_tablet(server["address"], server["code"].lower(), pc)
+    sync_with_tablet(server["address"], format_sync_code(server["code"]).lower(), pc)
 
     assert _setting(pc, "cong_name") == "С планшета"
+    db = DatabaseManager(server["tablet_db"])
+    with db.get_session() as session:
+        assert session.query(Participant.name).all() == [("Участник с ПК",)]
+    db.close()
     # Своё для устройства на ПК не переносится
     assert _setting(pc, "sync_last_address") is None
     # Планшет получил объединённую базу, своё для устройства сохранил
@@ -89,24 +138,58 @@ def test_sync_merges_tablet_into_pc_and_sends_back(server, tmp_path):
     assert _setting(server["tablet_db"], "sync_last_address") == "192.168.1.5"
 
 
+@requires_psk
 def test_wrong_code_is_rejected_then_locked(server, tmp_path):
     pc = _pc_db(tmp_path)
 
-    with pytest.raises(SyncClientError, match="Неверный код"):
-        sync_with_tablet(server["address"], "WRONG1", pc)
-    for _ in range(MAX_FAILED_ATTEMPTS - 1):
-        with pytest.raises(SyncClientError):
+    for attempts in range(1, MAX_FAILED_ATTEMPTS + 1):
+        with pytest.raises(SyncClientError, match="Неверный код"):
             sync_with_tablet(server["address"], "WRONG1", pc)
+        # Клиент видит отказ раньше, чем поток сервера увеличит счётчик
+        deadline = time.monotonic() + 5
+        while server["httpd"].failed_attempts < attempts and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert server["httpd"].failed_attempts == attempts
     with pytest.raises(SyncClientError, match="Слишком много"):
         sync_with_tablet(server["address"], server["code"], pc)
+    assert "Слишком много неверных кодов" in server["statuses"][-1]
 
 
+@requires_psk
+def test_foreign_connections_do_not_lock(server, tmp_path):
+    """Сканер сети, TLS без ключа и мусорные байты не считаются неверным кодом."""
+    import ssl
+
+    host, port = server["address"].rsplit(":", 1)
+    for _attempt in range(MAX_FAILED_ATTEMPTS + 2):
+        # Обычный TLS-клиент без PSK
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        with socket.create_connection((host, int(port)), timeout=5) as raw:
+            with pytest.raises((ssl.SSLError, OSError)):
+                ctx.wrap_socket(raw).do_handshake()
+        # Мусорные байты
+        with socket.create_connection((host, int(port)), timeout=5) as raw:
+            raw.sendall(b"\x00garbage\xff" * 10)
+            try:
+                raw.recv(16)
+            except OSError:
+                pass
+    time.sleep(0.2)
+    assert server["httpd"].failed_attempts == 0
+    # Настоящая синхронизация после этого проходит
+    sync_with_tablet(server["address"], server["code"], _pc_db(tmp_path))
+
+
+@requires_psk
 def test_unreachable_server_gives_clear_error(tmp_path):
     pc = _pc_db(tmp_path)
     with pytest.raises(SyncClientError, match="Не удалось подключиться"):
         sync_with_tablet(f"127.0.0.1:{_free_port()}", "ABC234", pc, timeout=2)
 
 
+@requires_psk
 def test_second_server_on_same_port_says_already_running(server):
     """Порт один и тот же: второе окно — «уже запущена», а не тихий перескок на 8766."""
     from core.sync_service import SyncServerBusyError
@@ -119,15 +202,47 @@ def test_second_server_on_same_port_says_already_running(server):
     assert second.httpd is None
 
 
-def test_get_db_without_code_is_rejected(server):
+@requires_psk
+@pytest.mark.parametrize(("method", "path"), [("GET", "/db"), ("POST", "/sync")])
+def test_plain_client_gets_upgrade_required(server, method, path):
     import urllib.error
     import urllib.request
 
+    request = urllib.request.Request(f"http://{server['address']}{path}", method=method)
     with pytest.raises(urllib.error.HTTPError) as exc:
-        urllib.request.urlopen(f"http://{server['address']}/db", timeout=5)
-    assert exc.value.code == 401
+        urllib.request.urlopen(request, timeout=5)
+    with exc.value as response:
+        assert response.code == 426
+        assert response.read() == b"Upgrade required"
+    assert server["httpd"].failed_attempts == 0
 
 
+@requires_psk
+def test_plain_server_gives_upgrade_message():
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+
+    class OldHandler(BaseHTTPRequestHandler):
+        timeout = 1
+
+    with HTTPServer(("127.0.0.1", 0), OldHandler) as httpd:
+        thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+        thread.start()
+        try:
+            with pytest.raises(SyncClientError, match="На планшете старая версия Cerastilo"):
+                download_database(f"127.0.0.1:{httpd.server_port}", "ABCDEFGHJKMN", timeout=5)
+        finally:
+            httpd.shutdown()
+
+
+def test_unsupported_psk_gives_clear_error(monkeypatch, tmp_path):
+    monkeypatch.setattr("core.sync_service.psk_supported", lambda: False)
+    with pytest.raises(SyncClientError, match=r"нужен Python 3\.13\+"):
+        download_database("127.0.0.1", "ABCDEFGHJKMN")
+    with pytest.raises(OSError, match=r"нужен Python 3\.13\+"):
+        SyncServer(str(tmp_path / "tablet.db"), "ABCDEFGHJKMN", port=0).bind()
+
+
+@requires_psk
 def test_push_failure_leaves_pc_merged_with_backup(tmp_path):
     """Планшет не принял базу: ПК уже объединён, копия до слияния есть, планшет не тронут."""
     from core.sync_service import SyncPushError
@@ -138,15 +253,14 @@ def test_push_failure_leaves_pc_merged_with_backup(tmp_path):
     def refuse(_data):
         raise RuntimeError("disk full")
 
-    port = _free_port()
     code = generate_sync_code()
-    srv = SyncServer(tablet, code, port=port, host="127.0.0.1", accept_database=refuse)
+    srv = SyncServer(tablet, code, port=0, host="127.0.0.1", accept_database=refuse)
     srv.bind()
     threading.Thread(target=srv.start, daemon=True).start()
     pc = _pc_db(tmp_path)
     try:
         with pytest.raises(SyncPushError, match="Повторите синхронизацию"):
-            sync_with_tablet(f"127.0.0.1:{port}", code, pc)
+            sync_with_tablet(f"127.0.0.1:{srv.port}", code, pc)
     finally:
         srv.stop()
 

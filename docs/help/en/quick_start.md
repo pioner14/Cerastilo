@@ -1,74 +1,50 @@
 # Cerastilo Quick Start
 
-Welcome to **Cerastilo**! This guide walks you through setting up the app and creating your first schedule in a few minutes.
-
----
-
 ## Step 1. Add publishers
 
-Add your publishers before assigning meeting parts.
+1. Open **“👥 Publishers”**.
+2. Click **“➕ Add”** in the upper right to open the publisher's profile.
+3. Fill in the profile.
+   - In “Full name:”, enter the first and last name, for example Ivan Petrov.
+   - In “Gender:”, select “Brother” or “Sister”.
+   - In “Spiritual status:”, select “Elder”, “Ministerial servant”, or “Publisher”.
+   - If the publisher belongs to another brother's household, select the head in “Family (Head):”. The app checks family ties when picking an assistant.
+   - In “Personal interval:”, leave “Auto (by type of service)” selected to use the interval for the publisher's status.
+4. Open **“Qualifications”**, the third tab after “General” and “Shift schedule”.
+5. Check the parts the publisher can handle, such as “Bible Reading (4 min)”, “Prayer”, or “Treasures (10 min)”.
+6. Click **“Save”**. The publisher appears in the list.
 
-1. Open the **“👥 Publishers”** tab.
-2. Click **“➕ Add”** in the upper right.
-3. Fill in the publisher's profile:
-   - **“Full name:”** Enter their first and last name, for example, *Ivan Petrov*.
-   - **“Gender:”** Choose “Brother” or “Sister”.
-   - **“Spiritual status:”** Choose “Elder”, “Ministerial servant”, or “Publisher”.
-   - **“Family (Head):”** If the publisher belongs to another brother's household, select the head of the family. This helps the app follow the rules for paired assignments.
-   - **“Personal interval:”** Leave “Auto (by type of service)” selected to let the app determine the interval between assignments.
-4. In the same profile, open the third tab, **“Qualifications”**, following “General” and “Shift schedule”. Check the boxes for the parts the publisher is qualified to handle, such as “Bible Reading (4 min)”, “Prayer”, or “Treasures (10 min)”. This tab is inside the profile.
-5. Click **“Save”**.
-6. To change a publisher's qualifications later, double-click their name in **“👥 Publishers”** (double-tap on a tablet) or select their name and click **“✏️ Edit”**. Open **“Qualifications”** in the profile.
-7. Repeat for all members of the congregation. For auto-assignment to work well, add at least 15–20 publishers with a mix of qualifications.
-
----
+To change qualifications later, double-click or double-tap the publisher's name. You can also select the publisher and click **“✏️ Edit”**. For auto-assignment, aim for at least 15–20 publishers with a mix of qualifications.
 
 ## Step 2. Add weeks to the schedule
 
-Once you've added publishers, prepare the weeks you want to schedule.
+1. If the weeks you need are missing, open **“📚 Workbooks”** in “⚙️ Settings”.
+2. Click **“📁 Select EPUB file”**.
+3. Select the Life and Ministry Meeting Workbook EPUB. The weeks and their meeting programs appear in the date tree in “📅 Schedule”.
 
-1. Open the **“📅 Schedule”** tab.
-2. If the week list on the left is empty or you need more weeks, go to “⚙️ Settings” → **“📚 Workbooks”** and select a Life and Ministry Meeting Workbook EPUB. English workbooks (`mwb_E_….epub`) are supported too.
-3. To create blank weeks for the next year, click **“➕ Future year”** below the week list on “📅 Schedule”.
-4. The new weeks appear in the date tree on the left.
-
----
+For blank templates for a future year, click **“➕ Future year”** below the date tree (chapter 4.2).
 
 ## Step 3. Assign parts automatically
 
-Auto-assignment is the quickest way to fill the schedule.
-
-1. Select a week in the date tree on the left.
-2. Check that the right pane shows the table of unassigned parts for that week.
-3. Click **“🪄 Auto-assign”** on the toolbar (**“🪄 Auto”** on narrow screens).
-4. The app checks assignment history, vacations, and shift schedules and selects suitable publishers for each part. This usually takes a fraction of a second.
-5. A brief message shows how many assignments were made.
-6. Review the filled table. Yellow highlights and ⚠️ symbols flag manual changes or warnings that need attention.
-
----
+1. Select a week in the date tree on the left. The assignment table opens on the right.
+2. Click **“🪄 Auto-assign”**. On narrow screens, click **“🪄 Auto”**.
+3. Click **“Yes”** in the “Auto-assign” dialog. The app fills empty slots based on assignment history, vacations, and shift schedules.
+4. Check the result. The app shows “✅ Assigned: N assignments” or “ℹ️ All assignments are already filled” if it made no new assignments. Review any yellow highlights or ⚠️ symbols for manual edits or warnings.
 
 ## Step 4. Review and adjust assignments
 
-You can change individual assignments after running auto-assignment.
-
-1. Click a cell in the publisher column. An empty cell opens the selection dialog directly. If the cell already has a name, choose **“👤 Select / replace…”** from the menu.
-2. The dialog lists eligible publishers.
-3. Publishers who have gone the longest without an assignment appear first.
-4. A ⚠️ symbol and an explanation appear next to any publisher with a conflict, such as a vacation or another assignment that week.
-5. Select the publisher you want. The cell updates immediately.
-
----
+1. Click a “Participant” cell. An empty cell opens “Select participant” directly.
+2. If the cell already has a name, choose **“👤 Select / replace…”** from the menu.
+3. Check the list. Available publishers appear above those already busy. The list shows how long it has been since each publisher's last assignment. A ⚠️ symbol and an explanation flag conflicts such as a vacation or another assignment that week.
+4. Select a publisher. Their name appears in the cell.
 
 ## Step 5. Export the schedule
 
-You can print the finished schedule or send it to publishers. Printouts, S-89 slips, and assignment emails use the interface language.
-
-1. On the **“📅 Schedule”** toolbar, choose a format:
-   - **“📕 PDF”** for sharing through a messaging app.
-   - **“📝 TXT”** for plain text.
-   - **“📄 Word (DOCX)…”** under **“⋯ More”** to print the schedule for the information board.
-   - **“🎟️ S-89 slips…”** under **“⋯ More”** for individual student assignment slips.
-2. In the week selection dialog, check the weeks to include and confirm.
-3. Save the file. The app suggests a filename with the month, meeting name, and export date.
-
-Your first schedule is ready to share.
+1. Choose a format from the “📅 Schedule” toolbar.
+   - Click **“📕 PDF”** to share or print the schedule, or **“📝 TXT”** for plain text.
+   - If the toolbar is compact, open **“⋯ More”** and select **“📕 PDF…”** or **“📝 TXT…”**.
+   - For a Word schedule, choose **“📄 Word (DOCX)…”** in “⋯ More”.
+   - For individual student assignment slips, choose **“🎟️ S-89 slips…”** in the same menu.
+2. Check the weeks to include.
+3. Click the confirmation button to open the save dialog.
+4. Save the file. The suggested schedule filename includes the month and year, meeting name, and export date.

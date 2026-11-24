@@ -139,6 +139,8 @@ snapshots/
 
 # Язык интерфейса на этом устройстве (core/i18n.py)
 ui_language
+sync_code
+update_check.json
 
 # Ключи подписи APK — только вне репозитория
 *.jks

@@ -4,13 +4,17 @@ Handles merging two SQLite databases (e.g. desktop master and the Android tablet
 Сервер — на планшете (входящие к ПК закрывает брандмауэр), ПК подключается к нему.
 """
 
-import os
+import hashlib
 import logging
+import os
 import secrets
 import shutil
+import socket
 import sqlite3
+import ssl
 import tempfile
 from datetime import datetime
+from http.server import HTTPServer
 from typing import Dict, Any, List
 from sqlalchemy import create_engine, func, inspect, select
 from sqlalchemy.orm import sessionmaker
@@ -54,11 +58,11 @@ class SyncServerBusyError(OSError):
     """Порт синхронизации занят — окно синхронизации уже открыто."""
 
 
-# Код подключения вводят руками на планшете, поэтому он короткий. Перебор
-# короткого кода по сети останавливает лимит неверных попыток: после него
-# сервер до перезапуска отвечает отказом на всё.
+# Код вводят на ПК. Длина кода и TLS защищают соединение, а лимит
+# неверных попыток останавливает перебор до перезапуска сервера.
 CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # без похожих 0/O, 1/I
-CODE_LENGTH = 6
+CODE_LENGTH = 12
+PSK_IDENTITY = "cerastilo-sync-1"
 MAX_FAILED_ATTEMPTS = 5
 
 
@@ -67,7 +71,49 @@ def generate_sync_code() -> str:
 
 
 def normalize_sync_code(code: str) -> str:
-    return "".join(code.split()).upper()
+    return "".join(code.replace("-", "").split()).upper()
+
+
+def format_sync_code(code: str) -> str:
+    code = normalize_sync_code(code)
+    return "-".join(code[i : i + 4] for i in range(0, len(code), 4))
+
+
+def derive_psk(code: str) -> bytes:
+    return hashlib.scrypt(
+        normalize_sync_code(code).encode(),
+        salt=b"cerastilo-sync-psk-v1",
+        n=2**14,
+        r=8,
+        p=1,
+        dklen=32,
+    )
+
+
+def psk_supported() -> bool:
+    return (
+        hasattr(ssl.SSLContext, "set_psk_server_callback")
+        and hasattr(ssl.SSLContext, "set_psk_client_callback")
+        and getattr(ssl, "HAS_PSK", False)
+        and getattr(ssl, "HAS_TLSv1_3", False)
+        and hasattr(hashlib, "scrypt")
+    )
+
+
+def _psk_unavailable_message() -> str:
+    return _("Для защищённой синхронизации нужен Python 3.13+ с поддержкой TLS-PSK.")
+
+
+def _client_context(code: str) -> ssl.SSLContext:
+    if not psk_supported():
+        raise SyncClientError(_psk_unavailable_message())
+    key = derive_psk(code)
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+    context.minimum_version = ssl.TLSVersion.TLSv1_3
+    context.set_psk_client_callback(lambda _hint: (PSK_IDENTITY, key))
+    return context
 
 
 def is_sqlite(data: bytes) -> bool:
@@ -589,19 +635,15 @@ class DatabaseMerger:
 
 def get_local_ip() -> str:
     """Find the local IP address in the Wi-Fi network."""
-    import socket
-
     # Адрес не обязан быть доступен: connect UDP лишь выбирает интерфейс.
     # Без маршрута по умолчанию (Wi-Fi без интернета) пробуем адреса локальных сетей.
     for target in ("10.255.255.255", "192.168.1.1", "192.168.0.1", "172.16.0.1", "10.0.0.1"):
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
-            s.connect((target, 1))
-            ip = s.getsockname()[0]
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                sock.connect((target, 1))
+                ip = sock.getsockname()[0]
         except OSError:
             continue
-        finally:
-            s.close()
         if ip and not ip.startswith("127."):
             return ip
     return "127.0.0.1"
@@ -611,18 +653,14 @@ class SyncHTTPHandler(object):
     """
     Фабрика обработчика HTTP-сервера синхронизации (сервер — на планшете).
 
-    GET  /db    (код в заголовке X-Sync-Code) — отдать свою базу ПК;
-    POST /sync  (multipart: token, database)  — принять объединённую базу от ПК.
-
-    Код — в заголовке, а не в адресе: строка запроса пишется в журнал.
-    Счётчик неверных кодов общий для обоих запросов.
+    GET  /db    — отдать базу планшета ПК.
+    POST /sync  — принять объединённую базу в поле database.
     """
 
     @staticmethod
-    def create_handler(db_path: str, auth_token: str, on_status_change, accept_database=None):
+    def create_handler(db_path: str, on_status_change, accept_database=None):
         """accept_database(bytes) заменяет базу и бросает исключение при неудаче;
         по умолчанию — replace_database(db_path, …) прямо в потоке сервера."""
-        failed_attempts = [0]
 
         if accept_database is None:
 
@@ -638,26 +676,11 @@ class SyncHTTPHandler(object):
             def log_message(self, format, *args):
                 logger.info(f"SyncServer: {format % args}")
 
-            def _check_code(self, code: str) -> bool:
-                """Проверка кода с лимитом попыток; при отказе ответ уже отправлен."""
-                if failed_attempts[0] >= MAX_FAILED_ATTEMPTS:
-                    self.send_error(429, "Too many failed attempts")
+            def parse_request(self):
+                if not super().parse_request():
                     return False
-                # Сравнение за постоянное время: неверный код не подобрать по задержке
-                if not code or not secrets.compare_digest(
-                    normalize_sync_code(code).encode("utf-8"),
-                    normalize_sync_code(auth_token).encode("utf-8"),
-                ):
-                    failed_attempts[0] += 1
-                    logger.warning("SyncServer: rejected request with invalid token")
-                    if failed_attempts[0] >= MAX_FAILED_ATTEMPTS and on_status_change:
-                        on_status_change(
-                            _(
-                                "Слишком много неверных кодов — синхронизация остановлена. "
-                                "Закройте окно и откройте заново."
-                            )
-                        )
-                    self.send_error(401, "Invalid sync token")
+                if self.server.failed_attempts >= MAX_FAILED_ATTEMPTS:
+                    self.send_error(429, "Too many failed attempts")
                     return False
                 return True
 
@@ -670,8 +693,6 @@ class SyncHTTPHandler(object):
                     return
                 if self.path != "/db":
                     self.send_error(404)
-                    return
-                if not self._check_code(self.headers.get("X-Sync-Code", "")):
                     return
                 try:
                     data = read_database_bytes(db_path)
@@ -718,11 +739,6 @@ class SyncHTTPHandler(object):
                         self.send_error(413, "Payload Too Large")
                         return
 
-                    # Код — до чтения тела: чужой клиент не заставит читать 64 МБ
-                    header_code = self.headers.get("X-Sync-Code", "")
-                    if header_code and not self._check_code(header_code):
-                        return
-
                     body_raw = self.rfile.read(content_length)
 
                     headers_raw = b""
@@ -739,11 +755,6 @@ class SyncHTTPHandler(object):
                             name = part.get_param("name", header="content-disposition")
                             if name:
                                 fields[name] = part.get_payload(decode=True)
-
-                    if not header_code:
-                        token = fields.get("token") or b""
-                        if not self._check_code(token.decode("utf-8", "replace")):
-                            return
 
                     payload = fields.get("database")
                     if not payload:
@@ -776,8 +787,62 @@ class SyncHTTPHandler(object):
         return Handler
 
 
+class _SyncHTTPServer(HTTPServer):
+    """Принимает HTTP-запросы после рукопожатия TLS-PSK."""
+
+    def __init__(self, address, handler, context, on_status_change, psk_offered=None):
+        self.context = context
+        self.psk_offered = psk_offered if psk_offered is not None else [True]
+        self.on_status_change = on_status_change
+        self.failed_attempts = 0
+        super().__init__(address, handler)
+
+    def get_request(self):
+        connection, address = super().get_request()
+        try:
+            connection.settimeout(15)
+            prefix = connection.recv(4, socket.MSG_PEEK)
+            if prefix and any(method.startswith(prefix) for method in (b"GET ", b"POST")):
+                connection.recv(4096)
+                connection.sendall(
+                    b"HTTP/1.1 426 Upgrade Required\r\n"
+                    b"Content-Type: text/plain\r\nContent-Length: 16\r\n"
+                    b"Connection: close\r\n\r\nUpgrade required"
+                )
+                raise ConnectionAbortedError(_("Получен запрос от старого клиента"))
+            if not prefix:
+                raise ConnectionAbortedError(_("Клиент закрыл соединение"))
+            connection = self.context.wrap_socket(
+                connection, server_side=True, do_handshake_on_connect=False
+            )
+            self.psk_offered[0] = False
+            try:
+                connection.do_handshake()
+            except ssl.SSLError:
+                # Неверным кодом считаем только клиента Cerastilo, который
+                # предъявил ключ. Сканеры сети и случайные подключения не
+                # должны блокировать синхронизацию.
+                if not self.psk_offered[0]:
+                    raise
+                if self.failed_attempts < MAX_FAILED_ATTEMPTS:
+                    self.failed_attempts += 1
+                    if self.failed_attempts == MAX_FAILED_ATTEMPTS and self.on_status_change:
+                        self.on_status_change(
+                            _(
+                                "Слишком много неверных кодов — синхронизация остановлена. "
+                                "Закройте окно и откройте заново."
+                            )
+                        )
+                raise
+            return connection, address
+        except OSError as e:
+            logger.warning("Соединение для синхронизации отклонено: %s", e)
+            connection.close()
+            raise
+
+
 class SyncServer(object):
-    """HTTP-сервер синхронизации (работает на планшете в отдельном потоке)."""
+    """HTTPS-сервер синхронизации (работает на планшете в отдельном потоке)."""
 
     def __init__(
         self,
@@ -809,15 +874,36 @@ class SyncServer(object):
         """
         import errno
         import time
-        from http.server import HTTPServer
 
+        if not psk_supported():
+            raise OSError(_psk_unavailable_message())
+        key = derive_psk(self.auth_token)
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.minimum_version = ssl.TLSVersion.TLSv1_3
+        context.num_tickets = 0
+        # Сервер однопоточный: флаг относится к текущему рукопожатию
+        psk_offered = [False]
+
+        def server_psk(identity):
+            if identity == PSK_IDENTITY:
+                psk_offered[0] = True
+                return key
+            return b""
+
+        context.set_psk_server_callback(server_psk)
         handler_cls = SyncHTTPHandler.create_handler(
-            self.db_path, self.auth_token, self.on_status_change, self.accept_database
+            self.db_path, self.on_status_change, self.accept_database
         )
         deadline = time.monotonic() + busy_wait
         while True:
             try:
-                self.httpd = HTTPServer((self.host, self.port), handler_cls)
+                self.httpd = _SyncHTTPServer(
+                    (self.host, self.port),
+                    handler_cls,
+                    context,
+                    self.on_status_change,
+                    psk_offered,
+                )
                 break
             except OSError as e:
                 if e.errno != errno.EADDRINUSE:
@@ -834,10 +920,9 @@ class SyncServer(object):
                 time.sleep(0.2)
         self.port = self.httpd.server_address[1]
         if self.host == ALL_INTERFACES_HOST:
-            # Всем интерфейсам — значит, всем устройствам сети; защита — код
+            # Сервер доступен всем устройствам локальной сети.
             logger.warning(
-                "Sync HTTP server listens on %s:%d — reachable from the whole "
-                "network, protected only by the token",
+                "Сервер синхронизации TLS-PSK доступен в локальной сети на %s:%d",
                 self.host,
                 self.port,
             )
@@ -914,7 +999,6 @@ def parse_server_address(address: str):
 
 def _http_error_message(e) -> str:
     messages = {
-        401: _("Неверный код. Проверьте код в окне синхронизации на планшете."),
         429: _(
             "Слишком много неверных кодов. Закройте окно синхронизации на планшете "
             "и откройте заново."
@@ -933,30 +1017,75 @@ def _connect_error_message(host, port) -> str:
     )
 
 
-def _open_url(request, timeout):
-    """Без системного прокси: планшет — в локальной сети."""
-    import urllib.request
+def _transport_error_message(error, host, port) -> str:
+    reason = error if isinstance(error, ssl.SSLError) else getattr(error, "reason", error)
+    if isinstance(reason, ssl.SSLError):
+        if reason.reason in {
+            "TLSV1_ALERT_DECRYPT_ERROR",
+            "SSLV3_ALERT_HANDSHAKE_FAILURE",
+            "TLSV1_ALERT_UNKNOWN_PSK_IDENTITY",
+        }:
+            return _("Неверный код. Проверьте код в окне синхронизации на планшете.")
+        if reason.reason in {
+            "WRONG_VERSION_NUMBER",
+            "HTTP_REQUEST",
+            "RECORD_LAYER_FAILURE",
+            "PACKET_LENGTH_TOO_LONG",
+        }:
+            return _(
+                "На планшете старая версия Cerastilo. Обновите программу на обоих устройствах."
+            )
+    return _connect_error_message(host, port)
 
-    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
+def _open_url(request, timeout, context):
+    """Подключается напрямую к планшету по HTTPS."""
+    import urllib.request
+    from http.client import HTTPSConnection
+
+    class PSKConnection(HTTPSConnection):
+        def connect(self):
+            super().connect()
+            # OpenSSL считает TLS 1.3 с внешним PSK возобновлённой сессией.
+            # Контекст не использует сохранённые сессии.
+            if not self.sock.session_reused:
+                self.close()
+                raise SyncClientError(
+                    _("Неверный код. Проверьте код в окне синхронизации на планшете.")
+                )
+
+    class PSKHandler(urllib.request.HTTPSHandler):
+        def https_open(self, request):
+            return self.do_open(PSKConnection, request, context=self._context)
+
+    class NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, req, fp, code, msg, headers, newurl):
+            return None
+
+    opener = urllib.request.build_opener(
+        urllib.request.ProxyHandler({}), PSKHandler(context=context), NoRedirect()
+    )
     return opener.open(request, timeout=timeout)
 
 
 def download_database(address: str, code: str, timeout: float = 60.0) -> bytes:
     """Забирает базу с планшета."""
+    return _download_database(address, _client_context(code), timeout)
+
+
+def _download_database(address: str, context: ssl.SSLContext, timeout: float) -> bytes:
     import urllib.error
     import urllib.request
 
     host, port = parse_server_address(address)
-    request = urllib.request.Request(
-        f"http://{host}:{port}/db", headers={"X-Sync-Code": normalize_sync_code(code)}
-    )
+    request = urllib.request.Request(f"https://{host}:{port}/db")
     try:
-        with _open_url(request, timeout) as response:
+        with _open_url(request, timeout, context) as response:
             data = response.read(MAX_UPLOAD_BYTES + 1)
     except urllib.error.HTTPError as e:
         raise SyncClientError(_http_error_message(e)) from e
     except (urllib.error.URLError, OSError) as e:
-        raise SyncClientError(_connect_error_message(host, port)) from e
+        raise SyncClientError(_transport_error_message(e, host, port)) from e
     if len(data) > MAX_UPLOAD_BYTES:
         raise SyncClientError(_("База слишком большая для синхронизации."))
     if not is_sqlite(data):
@@ -966,6 +1095,10 @@ def download_database(address: str, code: str, timeout: float = 60.0) -> bytes:
 
 def upload_database(address: str, code: str, db_path: str, timeout: float = 60.0) -> None:
     """Отправляет базу на планшет (тот заменяет ею свою)."""
+    _upload_database(address, _client_context(code), db_path, timeout)
+
+
+def _upload_database(address: str, context: ssl.SSLContext, db_path: str, timeout: float) -> None:
     import urllib.error
     import urllib.request
 
@@ -976,10 +1109,6 @@ def upload_database(address: str, code: str, db_path: str, timeout: float = 60.0
     body = b"".join(
         [
             f"--{boundary}\r\n".encode(),
-            b'Content-Disposition: form-data; name="token"\r\n\r\n',
-            normalize_sync_code(code).encode(),
-            b"\r\n",
-            f"--{boundary}\r\n".encode(),
             b'Content-Disposition: form-data; name="database"; filename="scheduler.db"\r\n',
             b"Content-Type: application/x-sqlite3\r\n\r\n",
             db_bytes,
@@ -988,21 +1117,18 @@ def upload_database(address: str, code: str, db_path: str, timeout: float = 60.0
         ]
     )
     request = urllib.request.Request(
-        f"http://{host}:{port}/sync",
+        f"https://{host}:{port}/sync",
         data=body,
         method="POST",
-        headers={
-            "Content-Type": f"multipart/form-data; boundary={boundary}",
-            "X-Sync-Code": normalize_sync_code(code),
-        },
+        headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
     )
     try:
-        with _open_url(request, timeout) as response:
+        with _open_url(request, timeout, context) as response:
             response.read()
     except urllib.error.HTTPError as e:
         raise SyncClientError(_http_error_message(e)) from e
     except (urllib.error.URLError, OSError) as e:
-        raise SyncClientError(_connect_error_message(host, port)) from e
+        raise SyncClientError(_transport_error_message(e, host, port)) from e
 
 
 def sync_with_tablet(address: str, code: str, db_path: str, timeout: float = 60.0) -> str:
@@ -1012,7 +1138,8 @@ def sync_with_tablet(address: str, code: str, db_path: str, timeout: float = 60.
     Возвращает путь копии базы ПК до слияния. SyncPushError — ПК уже
     объединён, а планшет базу не получил (повтор безопасен).
     """
-    tablet_bytes = download_database(address, code, timeout=timeout)
+    context = _client_context(code)
+    tablet_bytes = _download_database(address, context, timeout)
 
     backup_path = backup_database(db_path)
     fd, tmp_path = tempfile.mkstemp(suffix=".db")
@@ -1027,7 +1154,7 @@ def sync_with_tablet(address: str, code: str, db_path: str, timeout: float = 60.
 
     try:
         # Планшет отвечает после замены базы (до минуты) — ждём дольше
-        upload_database(address, code, db_path, timeout=timeout + 30)
+        _upload_database(address, context, db_path, timeout + 30)
     except SyncClientError as e:
         raise SyncPushError(
             _(

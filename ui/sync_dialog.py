@@ -25,12 +25,14 @@ from PySide6.QtWidgets import (
 )
 
 from core.styles import palette
+from core.sync_code_store import load_sync_code, save_sync_code
 from core.sync_service import (
     DEFAULT_PORT,
     SyncClientError,
     SyncPushError,
     SyncServer,
     SyncServerBusyError,
+    format_sync_code,
     generate_sync_code,
     get_local_ip,
     replace_database,
@@ -47,6 +49,7 @@ class SyncStatusSignaler(QObject):
     """Переносит статусы HTTP-сервера в главный поток Qt."""
 
     status_changed = Signal(str)
+    server_stopped = Signal()
     # (данные, threading.Event, dict для ошибки) — замена базы в главном потоке
     replace_requested = Signal(object, object, object)
 
@@ -66,11 +69,17 @@ class SyncServerDialog(QDialog):
         self.server_thread = None
         self.sync_server = None
         self._closing = False
-        self.code = generate_sync_code()
+        self._rotating = False
+        self.db_path = self.facade.schedule.db.db_path
+        self.code = load_sync_code(self.db_path)
+        if not self.code:
+            self.code = generate_sync_code()
+            save_sync_code(self.db_path, self.code)
         self.local_ip = get_local_ip()
 
         self.signaler = SyncStatusSignaler()
         self.signaler.status_changed.connect(self.update_status_label)
+        self.signaler.server_stopped.connect(self._restart_server)
         self.signaler.replace_requested.connect(self._replace_in_main_thread)
 
         self.setup_ui()
@@ -109,7 +118,8 @@ class SyncServerDialog(QDialog):
             if not self.local_ip.startswith("127.")
             else _("не определён — проверьте Wi-Fi")
         )
-        self.code_label = QLabel(self.code)
+        self._display_address = self.address_label.text()
+        self.code_label = QLabel(format_sync_code(self.code))
         for label in (self.address_label, self.code_label):
             label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
@@ -135,13 +145,46 @@ class SyncServerDialog(QDialog):
         btn_close = QPushButton(_("Закрыть"))
         btn_close.clicked.connect(self.reject)
         btn_layout.addStretch()
+        self.btn_new_code = QPushButton(_("Новый код"))
+        self.btn_new_code.clicked.connect(self._new_code)
+        btn_layout.addWidget(self.btn_new_code)
         btn_layout.addWidget(btn_close)
         btn_layout.addStretch()
         layout.addLayout(btn_layout)
 
+    def _new_code(self):
+        new_code = generate_sync_code()
+        # Не сохранили — при следующем открытии окна вернулся бы старый код
+        if not save_sync_code(self.db_path, new_code):
+            self.status_label.setText(_("Не удалось сохранить новый код. Код не изменён."))
+            return
+        self._rotating = True
+        self.btn_new_code.setEnabled(False)
+        self.code = new_code
+        server, self.sync_server = self.sync_server, None
+        if server is None:
+            self._restart_server()
+            return
+
+        def stop_server():
+            server.stop()
+            self.signaler.server_stopped.emit()
+
+        threading.Thread(target=stop_server, daemon=True).start()
+
+    def _restart_server(self):
+        if self._closing:
+            return
+        self._rotating = False
+        self.btn_new_code.setEnabled(True)
+        self.start_server()
+
     def start_server(self):
+        self.address_label.setText(self._display_address)
+        self.code_label.setText(format_sync_code(self.code))
+        self.status_label.setText(_("Ожидание ПК…"))
         self.sync_server = SyncServer(
-            db_path=self.facade.schedule.db.db_path,
+            db_path=self.db_path,
             auth_token=self.code,
             port=DEFAULT_PORT,
             on_status_change=self.signaler.status_changed.emit,
@@ -178,17 +221,20 @@ class SyncServerDialog(QDialog):
 
     def _replace_in_main_thread(self, data, done, box):
         try:
-            if self._closing:
-                raise RuntimeError("sync window is closing")
+            if self._closing or self._rotating:
+                raise RuntimeError(_("Окно синхронизации закрывается или меняется код"))
             db = self.facade.schedule.db
             db.close()
             replace_database(db.db_path, data)
+            self.btn_new_code.setEnabled(False)
         except Exception as e:  # noqa: BLE001 — ответ уйдёт ПК как ошибка 500
             box["error"] = e
         finally:
             done.set()
 
     def update_status_label(self, status):
+        if self._rotating or self._closing:
+            return
         self.status_label.setText(status)
         if status == sync_success_message():
             self._closing = True
@@ -225,6 +271,7 @@ class _SyncWorker(QThread):
     def run(self):
         try:
             sync_with_tablet(self.address, self.code, self.db_path)
+            save_sync_code(self.db_path, self.code)
             self.finished_ok.emit()
         except SyncPushError as e:
             self.failed.emit(str(e), True)
@@ -260,8 +307,9 @@ class SyncClientDialog(QDialog):
         form = QFormLayout()
         self.address_edit = QLineEdit(facade.get_setting("sync_last_address", "") or "")
         self.address_edit.setPlaceholderText("192.168.1.20")
-        self.code_edit = QLineEdit()
-        self.code_edit.setPlaceholderText("ABC234")
+        self.code_edit = QLineEdit(format_sync_code(load_sync_code(facade.schedule.db.db_path)))
+        self.code_edit.setMaxLength(32)
+        self.code_edit.setPlaceholderText(_("ABCD-EFGH-JKMN"))
         # Без минимальной высоты Hyprland сжимает окно, и поля обрезают текст
         for edit in (self.address_edit, self.code_edit):
             edit.setMinimumHeight(36)

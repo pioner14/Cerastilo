@@ -16,6 +16,7 @@ import pytest
 from PySide6.QtWidgets import QMessageBox, QFileDialog, QCheckBox, QPushButton
 from PySide6.QtCore import Qt
 
+from core import update_check
 from ui.settings_view import SettingsView
 
 
@@ -83,6 +84,35 @@ class TestSettingsViewInit:
         assert isinstance(chk, QCheckBox)
         assert chk.text() == mock_module.name
         assert chk.isChecked() is True
+
+    def test_updates_section(self, qtbot, settings_facade, tmp_path, monkeypatch):
+        monkeypatch.setenv("DB_PATH", str(tmp_path / "x.db"))
+        monkeypatch.delenv("CERASTILO_UPDATE_CHECK_DEFAULT", raising=False)
+        url = "https://github.com/pioner14/Cerastilo/releases/tag/v99.0.0"
+        monkeypatch.setattr(update_check, "fetch_latest", lambda: {"version": "99.0.0", "url": url})
+        view = SettingsView(settings_facade)
+        qtbot.addWidget(view)
+
+        sections = [view.section_nav.item(i).text() for i in range(view.section_nav.count())]
+        index = sections.index("⬆️ Обновления")
+        assert sections[index + 1] == "❤️ Поддержать проект"
+        group = view._sections[index]
+        button = group.findChild(QPushButton)
+        assert button.text() == "Проверить обновления"
+        auto_check = group.findChild(QCheckBox)
+        assert auto_check.isChecked()
+        auto_check.setChecked(False)
+        assert not update_check.auto_check_enabled()
+
+        button.click()
+        assert not button.isEnabled()
+        qtbot.waitUntil(button.isEnabled, timeout=2000)
+        view.wait_for_update_check()
+        assert button.isEnabled()
+        assert "Доступна версия 99.0.0" in view.update_result.text()
+        assert f'href="{url}"' in view.update_result.text()
+        assert view.update_result.openExternalLinks()
+        assert "last_check" in (tmp_path / "update_check.json").read_text(encoding="utf-8")
 
 
 class TestSettingsViewSave:
