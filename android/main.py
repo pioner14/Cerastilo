@@ -34,16 +34,40 @@ def _enable_touch_scrolling(app) -> None:
     Виджеты Qt по умолчанию листаются только колесом мыши и ползунком.
     """
     from PySide6.QtCore import QEvent, QObject
-    from PySide6.QtWidgets import QAbstractScrollArea, QScroller
+    from PySide6.QtWidgets import (
+        QAbstractItemView,
+        QAbstractScrollArea,
+        QHeaderView,
+        QScroller,
+        QScrollerProperties,
+    )
 
     class _ScrollerGrabber(QObject):
         def eventFilter(self, obj, event):
-            if event.type() == QEvent.Type.Polish and isinstance(obj, QAbstractScrollArea):
+            if (
+                event.type() == QEvent.Type.Polish
+                and isinstance(obj, QAbstractScrollArea)
+                # Заголовок таблицы (подписи пунктов на доске месяца) — тоже область
+                # прокрутки; с жестом он листался сам по себе, отдельно от клеток
+                and not isinstance(obj, QHeaderView)
+            ):
+                if isinstance(obj, QAbstractItemView):
+                    # по пикселю, а не по строке: иначе подписи строк прыгают рывками
+                    obj.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
+                    obj.setHorizontalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
                 # Касание приходит в виджеты как мышь (Qt синтезирует её из
                 # тача), поэтому жест — «левой кнопкой», а не TouchGesture.
                 QScroller.grabGesture(
                     obj.viewport(), QScroller.ScrollerGestureType.LeftMouseButtonGesture
                 )
+                # Без «пружины» у краёв: таблица недели и страница вокруг неё
+                # тянулись резиной (жалоба владельца 24.11)
+                scroller = QScroller.scroller(obj.viewport())
+                props = scroller.scrollerProperties()
+                off = QScrollerProperties.OvershootPolicy.OvershootAlwaysOff
+                props.setScrollMetric(QScrollerProperties.ScrollMetric.HorizontalOvershootPolicy, off)
+                props.setScrollMetric(QScrollerProperties.ScrollMetric.VerticalOvershootPolicy, off)
+                scroller.setScrollerProperties(props)
             return False
 
     app._scroller_grabber = _ScrollerGrabber(app)

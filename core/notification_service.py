@@ -20,7 +20,7 @@ import email.utils
 import imaplib
 import logging
 import smtplib
-import ssl
+from core import tls
 import urllib.parse
 import uuid
 from dataclasses import dataclass, field
@@ -960,7 +960,9 @@ class NotificationService:
         """
         since = _imap_date(datetime.now() - timedelta(days=days))
         replies, unclear = [], 0
-        imap = imaplib.IMAP4_SSL(self.imap_host, timeout=self.NETWORK_TIMEOUT)
+        imap = imaplib.IMAP4_SSL(
+            self.imap_host, timeout=self.NETWORK_TIMEOUT, ssl_context=tls.create_default_context()
+        )
         try:
             imap.login(self.smtp_user, self.smtp_password)
             imap.select("INBOX", readonly=True)
@@ -1028,7 +1030,7 @@ class NotificationService:
         """Устанавливает SMTP-соединение. Возвращает активный server объект."""
         if self.smtp_port == self.GMAIL_PORT_SSL:
             # SSL
-            ctx = ssl.create_default_context()
+            ctx = tls.create_default_context()
             server = smtplib.SMTP_SSL(
                 self.smtp_host, self.smtp_port, context=ctx, timeout=self.NETWORK_TIMEOUT
             )
@@ -1036,7 +1038,7 @@ class NotificationService:
             # STARTTLS (порт 587 или другой)
             server = smtplib.SMTP(self.smtp_host, self.smtp_port, timeout=self.NETWORK_TIMEOUT)
             server.ehlo()
-            server.starttls(context=ssl.create_default_context())
+            server.starttls(context=tls.create_default_context())
             server.ehlo()
 
         server.login(self.smtp_user, self.smtp_password)

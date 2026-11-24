@@ -6,7 +6,7 @@ on:
       version:
         description: Версия для имени архива
         required: true
-        default: '0.1.1'
+        default: '0.2.0'
         type: string
 
 concurrency:

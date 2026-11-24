@@ -7,6 +7,24 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-11-24
+
+### Изменено / Changed
+
+- Одна кнопка «📤 Экспорт» на панели «📅 Расписание» вместо «📕 PDF», «📝 TXT» и «⋯ Ещё»: в её меню PDF, Word, TXT и советы S-89 (на узком экране — и «Печать»).
+- One “📤 Export” button on the “📅 Schedule” toolbar instead of “📕 PDF”, “📝 TXT” and “⋯ More”: its menu has PDF, Word, TXT and S-89 slips (and “Print” on narrow screens).
+- «🕒 История» и «📊 Статистика» объединены в одну вкладку «📊 История и статистика» с двумя страницами; F1 и «❓ Справка» открывают главу той страницы, что сейчас открыта.
+- “🕒 History” and “📊 Statistics” are merged into one “📊 History and statistics” tab with two pages; F1 and “❓ Help” open the chapter for the page currently shown.
+- Доска месяца стала проще: убраны строка сводки («Назначено…, пустых…») и легенда цветов над доской.
+- The month board is simpler: the summary line (“Assigned…, empty…”) and the colour legend above it are gone.
+- На планшете списки и таблицы больше не «пружинят» у краёв при прокрутке пальцем.
+- On the tablet, lists and tables no longer bounce at the edges when scrolled with a finger.
+
+### Исправлено / Fixed
+
+- Android: проверка обновлений и отправка писем (SMTP/IMAP) не работали — не находились системные сертификаты. Теперь используются сертификаты Android.
+- Android: the update check and email (SMTP/IMAP) did not work because system certificates were not found. Android's own certificates are now used.
+
 ## [0.1.1] — 2026-11-24
 
 ### Добавлено / Added
@@ -82,6 +100,7 @@ First public release of Cerastilo, a "Life and Ministry" meeting scheduler for P
 - Data: Linux — `~/.local/share/cerastilo`, Windows — `%LOCALAPPDATA%\Cerastilo`.
 - License: source-available, see `LICENSE`.
 
-[Unreleased]: https://github.com/pioner14/Cerastilo/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/pioner14/Cerastilo/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/pioner14/Cerastilo/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/pioner14/Cerastilo/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/pioner14/Cerastilo/releases/tag/v0.1.0

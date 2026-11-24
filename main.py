@@ -25,12 +25,11 @@ from core.styles import Theme, ThemeManager, apply_theme
 from core.version import APP_VERSION
 from core.workers import TaskWorker
 from ui.assignment_config_view import AssignmentConfigView
-from ui.history_view import HistoryView
+from ui.history_stats_view import HistoryStatsView
 from ui.leader_dashboard_view import LeaderDashboardView
 from ui.participants_view import ParticipantsView
 from ui.schedule_view import ScheduleView
 from ui.settings_view import SettingsView
-from ui.statistics_view import StatisticsView
 from core.i18n import _, tr
 
 
@@ -65,8 +64,10 @@ class MainWindow(QMainWindow):
         # Остальные view пока используют старый подход (db глобально или внутри),
         # будем рефакторить их постепенно.
         self.participants_view = ParticipantsView(facade=self.facade)
-        self.history_view = HistoryView(facade=self.facade)
-        self.statistics_view = StatisticsView(facade=self.facade)
+        # История и статистика — одна вкладка с двумя страницами
+        self.history_stats_view = HistoryStatsView(facade=self.facade)
+        self.history_view = self.history_stats_view.history_view
+        self.statistics_view = self.history_stats_view.statistics_view
         self.config_view = AssignmentConfigView(facade=self.facade)
         self.settings_view = SettingsView(facade=self.facade)
         # Импорт EPUB — раздел «Настроек», отдельной вкладки больше нет
@@ -77,8 +78,7 @@ class MainWindow(QMainWindow):
         self.tabs.addTab(self.dashboard_view, _("🏠 Сегодня"))
         self.tabs.addTab(self.schedule_view, _("📅 Расписание"))
         self.tabs.addTab(self.participants_view, _("👥 Возвещатели"))
-        self.tabs.addTab(self.history_view, _("🕒 История"))
-        self.tabs.addTab(self.statistics_view, _("📊 Статистика"))
+        self.tabs.addTab(self.history_stats_view, _("📊 История и статистика"))
         # self.tabs.addTab(self.config_view, "🛠️ Квалификации") # Скрыл по просьбе, т.к. используется редко
 
         self.tabs.addTab(self.settings_view, _("⚙️ Настройки"))
@@ -173,8 +173,7 @@ class MainWindow(QMainWindow):
             self.dashboard_view: "dashboard",
             self.schedule_view: "schedule",
             self.participants_view: "participants",
-            self.history_view: "history",
-            self.statistics_view: "statistics",
+            self.history_stats_view: "history",
             self.settings_view: "settings",
         }
         self.help_button = QToolButton()
@@ -191,7 +190,10 @@ class MainWindow(QMainWindow):
         from core.help_docs import TAB_SECTIONS
         from ui.help_dialog import show_help
 
-        key = self._help_sections.get(self.tabs.currentWidget())
+        widget = self.tabs.currentWidget()
+        key = self._help_sections.get(widget)
+        if widget is self.history_stats_view:
+            key = widget.help_key()
         show_help(self, TAB_SECTIONS.get(key) if key else None, self.help_language)
 
     def _on_error(self, message, context="", **kwargs):

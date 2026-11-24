@@ -274,37 +274,26 @@ class ScheduleView(
         self.shortcut_print = QShortcut(QKeySequence(QKeySequence.StandardKey.Print), self)
         self.shortcut_print.activated.connect(self._on_print)
 
-        # Экспорт: PDF и TXT — в один клик, остальное — в «Ещё»
-        self.btn_export_pdf = QPushButton("📕 PDF")
-        self.btn_export_pdf.setObjectName("btnExportPdf")
-        self.btn_export_pdf.setToolTip(_("Экспорт расписания в PDF"))
-        self.btn_export_pdf.clicked.connect(lambda: self._on_export("pdf"))
-        toolbar_layout.addWidget(self.btn_export_pdf)
-
-        self.btn_export_txt = QPushButton("📝 TXT")
-        self.btn_export_txt.setObjectName("btnExportTxt")
-        self.btn_export_txt.setToolTip(_("Экспорт расписания в текстовый файл"))
-        self.btn_export_txt.clicked.connect(lambda: self._on_export("txt"))
-        toolbar_layout.addWidget(self.btn_export_txt)
-
-        self.btn_more = QPushButton(_("⋯ Ещё"))
-        self.btn_more.setObjectName("btnMore")
-        self.btn_more.setToolTip(_("Другие форматы экспорта"))
-        more_menu = QMenu(self.btn_more)
-        # В узком окне (планшет) печать, PDF и TXT уходят сюда — см. _fit_toolbar()
-        self.action_print = more_menu.addAction(_("🖨️ Печать…"))
+        # Экспорт — одна кнопка с меню: PDF, Word, TXT, S-89
+        self.btn_export = QPushButton(_("📤 Экспорт"))
+        self.btn_export.setObjectName("btnExport")
+        self.btn_export.setToolTip(_("Сохранить расписание в файл: PDF, Word, TXT или советы S-89"))
+        export_menu = QMenu(self.btn_export)
+        # В узком окне (планшет) печать уходит сюда — см. _fit_toolbar()
+        self.action_print = export_menu.addAction(_("🖨️ Печать…"))
         self.action_print.triggered.connect(self._on_print)
-        self.action_export_pdf = more_menu.addAction("📕 PDF…")
+        self.action_export_pdf = export_menu.addAction("📕 PDF…")
         self.action_export_pdf.triggered.connect(lambda: self._on_export("pdf"))
-        self.action_export_txt = more_menu.addAction("📝 TXT…")
-        self.action_export_txt.triggered.connect(lambda: self._on_export("txt"))
-        self.action_export_docx = more_menu.addAction("📄 Word (DOCX)…")
+        self.action_export_docx = export_menu.addAction("📄 Word (DOCX)…")
         self.action_export_docx.triggered.connect(lambda: self._on_export("docx"))
-        self.action_export_s89 = more_menu.addAction(_("🎟️ Советы S-89…"))
+        self.action_export_txt = export_menu.addAction("📝 TXT…")
+        self.action_export_txt.triggered.connect(lambda: self._on_export("txt"))
+        export_menu.addSeparator()
+        self.action_export_s89 = export_menu.addAction(_("🎟️ Советы S-89…"))
         self.action_export_s89.setToolTip(_("Быстрее: правый клик по месяцу в списке недель"))
         self.action_export_s89.triggered.connect(self._on_export_s89)
-        self.btn_more.setMenu(more_menu)
-        toolbar_layout.addWidget(self.btn_more)
+        self.btn_export.setMenu(export_menu)
+        toolbar_layout.addWidget(self.btn_export)
 
         toolbar_layout.addSpacing(10)
 
@@ -579,11 +568,9 @@ class ScheduleView(
 
     def _fit_toolbar(self) -> None:
         """Если кнопки не влезают (планшет, узкое окно) — короткая подпись
-        «Авто», а PDF и TXT прячутся в меню «Ещё»; иначе Qt сжимает кнопки
+        «Авто», а «Печать» уходит в меню «Экспорт»; иначе Qt сжимает кнопки
         и обрезает надписи («Іеся», «егодн»)."""
         self.btn_auto.setText(self.AUTO_TEXT_FULL)
-        self.btn_export_pdf.setVisible(True)
-        self.btn_export_txt.setVisible(True)
         self.btn_print.setVisible(self._can_print())
         # пока окно не показано, ширина условная (640) — не сжимаем
         compact = (
@@ -592,12 +579,8 @@ class ScheduleView(
         )
         if compact:
             self.btn_auto.setText(self.AUTO_TEXT_SHORT)
-        self.btn_export_pdf.setVisible(not compact)
-        self.btn_export_txt.setVisible(not compact)
         self.btn_print.setVisible(self._can_print() and not compact)
         self.action_print.setVisible(self._can_print() and compact)
-        self.action_export_pdf.setVisible(compact)
-        self.action_export_txt.setVisible(compact)
 
     def _set_month_mode(self, on: bool) -> None:
         self.right_stack.setCurrentWidget(self.month_board if on else self.right_panel)

@@ -900,23 +900,17 @@ class TestScheduleViewInit:
         assert isinstance(view.btn_clear, QPushButton)
         assert "Очистить" in view.btn_clear.toolTip()
 
-    def test_view_has_pdf_and_txt_export_buttons(self, mock_facade, qapp):
-        """PDF и TXT экспортируются отдельными кнопками в один клик."""
+    def test_export_menu_has_all_formats(self, mock_facade, qapp):
+        """Одна кнопка «Экспорт»: в меню PDF, Word, TXT и S-89."""
         view = ScheduleView(mock_facade)
 
-        assert isinstance(view.btn_export_pdf, QPushButton)
-        assert "PDF" in view.btn_export_pdf.text()
-        assert isinstance(view.btn_export_txt, QPushButton)
-        assert "TXT" in view.btn_export_txt.text()
-
-    def test_more_menu_has_docx_and_s89(self, mock_facade, qapp):
-        """Word и S-89 спрятаны в меню «Ещё»."""
-        view = ScheduleView(mock_facade)
-
-        texts = [a.text() for a in view.btn_more.menu().actions()]
-        assert any("Word" in t for t in texts)
-        assert any("S-89" in t for t in texts)
-        assert not hasattr(view, "btn_export_s89")
+        assert isinstance(view.btn_export, QPushButton)
+        assert "Экспорт" in view.btn_export.text()
+        texts = [a.text() for a in view.btn_export.menu().actions()]
+        for fmt in ("PDF", "Word", "TXT", "S-89"):
+            assert any(fmt in t for t in texts), fmt
+        for old in ("btn_export_pdf", "btn_export_txt", "btn_more", "btn_export_s89"):
+            assert not hasattr(view, old)
 
     def test_notify_menu_has_log(self, mock_facade, qapp):
         """Журнал уведомлений — в меню кнопки «Уведомить»."""
@@ -1201,8 +1195,8 @@ class TestScheduleViewExport:
         """Кнопки экспорта существуют."""
         view = ScheduleView(mock_facade)
 
-        assert view.btn_export_pdf is not None
-        assert view.btn_export_txt is not None
+        assert view.btn_export is not None
+        assert view.btn_export.menu() is not None
 
     def test_export_creates_dialog(self, mock_facade, qapp, qtbot):
         """Экспорт создаёт ExportDialog."""
@@ -1560,21 +1554,23 @@ def test_notification_dialog_preselects_only_given(qapp):
     assert checked == {1: False, 2: True, 3: False}  # у 3 нет email
 
 
-def test_narrow_toolbar_moves_pdf_txt_to_more_menu(schedule_view, qapp):
-    """Узкое окно (планшет): «Авто» коротко, PDF/TXT — в меню «Ещё», а не обрезанные кнопки."""
+def test_narrow_toolbar_moves_print_to_export_menu(schedule_view, qapp):
+    """Узкое окно (планшет): «Авто» коротко, «Печать» — в меню «Экспорт»."""
     view = schedule_view
     view.show()
     view.toolbar_widget.setMaximumWidth(700)  # как на планшете: окно уже кнопок
     qapp.processEvents()
     view._fit_toolbar()
     assert view.btn_auto.text() == view.AUTO_TEXT_SHORT
-    assert view.btn_export_pdf.isHidden() and view.action_export_pdf.isVisible()
+    assert view.btn_print.isHidden()
+    assert view.action_print.isVisible() == view._can_print()
     view.toolbar_widget.setMaximumWidth(16777215)
     view.resize(4000, 600)
     qapp.processEvents()
     view._fit_toolbar()
     assert view.btn_auto.text() == view.AUTO_TEXT_FULL
-    assert not view.btn_export_pdf.isHidden() and not view.action_export_pdf.isVisible()
+    assert view.btn_print.isHidden() != view._can_print()
+    assert not view.action_print.isVisible()
 
 
 def test_month_auto_assign_takes_snapshot_and_undo_restores(schedule_view, tmp_path):
@@ -1759,4 +1755,4 @@ def test_narrow_toolbar_fits_when_tab_shown_later(schedule_view, qapp):
     tabs.setCurrentWidget(view)
     qapp.processEvents()
     assert view.btn_auto.text() == view.AUTO_TEXT_SHORT
-    assert view.btn_export_pdf.isHidden()
+    assert view.btn_print.isHidden()

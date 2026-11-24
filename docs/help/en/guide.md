@@ -36,7 +36,7 @@ Cerastilo schedules the “Our Christian Life and Ministry” meeting on desktop
   - 7.2. Spiritual status and role qualifications
   - 7.3. Student assignment and assistant rules (gender and family)
   - 7.4. The Circuit Overseer's visit
-- 8. Assignment history and workload (“🕒 History” and “📊 Statistics”)
+- 8. Assignment history and workload (“📊 History and statistics”)
   - 8.1. Publisher assignment history
   - 8.2. Heatmap (“Who gave parts and when”)
   - 8.3. Workload charts by assignment category
@@ -60,7 +60,7 @@ Cerastilo schedules the “Our Christian Life and Ministry” meeting on desktop
   - 11.6. Checking for updates
 - 12. Using Cerastilo on Android tablets
   - 12.1. Touch input and scrolling
-  - 12.2. Adaptive toolbar (“⋯ More”)
+  - 12.2. Adaptive toolbar (“📤 Export”)
 
 ## 1. Introduction and purpose
 
@@ -117,11 +117,12 @@ Click a tab at the top of the main window, or tap it on a tablet. From left to r
 1. “🏠 Today” shows urgent tasks and the next meeting at a glance. See chapter 3.
 2. “📅 Schedule” is the main work area. The date tree on the left is organized by year, month, and week. On the right is either the selected week's schedule or the month board. See chapter 6.
 3. “👥 Publishers” lists publishers in a searchable, sortable, color-coded table. Open a publisher's profile here. See chapter 5.
-4. “🕒 History” lists the selected publisher's assignments in date order. See chapter 8.
-5. “📊 Statistics” shows an assignment heatmap and workload charts by category. See chapter 8.
-6. “⚙️ Settings” includes workbook import (chapter 4), congregation settings, appearance, modules, data migration, backups, sync, and email settings. See chapter 11.
+4. “📊 History and statistics” has two pages. “🕒 History” lists the selected publisher’s assignments, and “📊 Statistics” shows a heatmap and workload charts. See chapter 8.
+5. “⚙️ Settings” includes workbook import (chapter 4), congregation settings, appearance, modules, data migration, backups, sync, and email settings. See chapter 11.
 
-The publisher list and history refresh when you open their tabs.
+The publisher list and assignment history refresh when you open the “🕒 History” page.
+
+In “📊 History and statistics”, the Help button or F1 opens the section for the current page: 8.1 for “🕒 History” or 8.2 for “📊 Statistics”.
 
 The status bar at the bottom briefly shows the results of actions, for example “Part duration updated” or “Auto-assign: N assignments”.
 
@@ -626,19 +627,6 @@ Click **“Month”** on the schedule toolbar to see the whole month on the righ
 
 Week headers. Each column shows the week date, “CO visit” if applicable, and “❌ N” for declines and “⏳ N” for outstanding replies. Publishers usually receive paper slips at the meeting, so the header leaves out the count of people who have yet to be emailed. Click a header to open the weekly table.
 
-Summary above the board. Colored dots accompany the following counts:
-
-* “Assigned X of Y”
-* “Empty: N”
-* “Twice in a week: N” when the same person is assigned twice
-* “Two weeks in a row: N” for a repeated role
-* “On vacation, replacement needed: N” for assigned publishers who will be away
-* “Cannot make it: N” for declines
-* “Awaiting reply: N” for publishers who have been notified and have yet to reply
-* “Elders on student assignments: N” when the board has any. These assignments are allowed and flagged for review.
-
-The legend shows a green dot for “not assigned for a long time or new” (eight weeks or more), orange for “less than 4 wk ago”, and backgrounds for “⏳ awaiting reply”, “✅ confirmed”, and “❌ unavailable / 🏖️ on vacation”.
-
 Cells
 
 * Each publisher is shown by a short name, with the time since their last assignment, for example “8 wk”, or “new”. Email markers are ⏳ for awaiting reply, ✅ for confirmed, ❌ for declined, and ⚠✉ for a send error.
@@ -803,15 +791,15 @@ Fill the CO visit week on its own or along with the other weeks in the month (ch
 
 Notification counts. Regular weeks and CO visit weeks show “Assigned X of Y”, “✉️ Notify the rest”, “❌ Cannot make it: N”, “⏳ Not confirmed: N”, and “⚠️ Conflicts: N” when applicable. Memorial, assembly, and convention weeks show the event notice.
 
-## 8. Assignment history and workload (“🕒 History” and “📊 Statistics”)
+## 8. Assignment history and workload (“📊 History and statistics”)
 
-![The “🕒 History” tab](../ru/screenshots/istoriya.png)
+![The “🕒 History” page](../ru/screenshots/istoriya.png)
 
-These tabs show how many assignments each publisher has received, which ones they had, and when. Use them to share assignments fairly or look up someone's history on request.
+The “📊 History and statistics” tab contains the “🕒 History” and “📊 Statistics” pages. They show how many assignments each publisher has received, which ones they had, and when. Use them to share assignments fairly or look up someone’s history on request.
 
 ### 8.1. Publisher assignment history
 
-“🕒 History” shows the selected publisher's assignments by date under “🕒 Assignment history”.
+The “🕒 History” page shows the selected publisher's assignments by date under “🕒 Assignment history”.
 
 Left pane: publishers
 
@@ -835,16 +823,16 @@ Right pane: assignment history
 * Rows appear in the order returned by the assignment history.
 * Opening “🕒 History” refreshes the list and history, reflecting any edits in “📅 Schedule”.
 
-1. Open **“🕒 History”**.
+1. Open **“📊 History and statistics”**, then select the **“🕒 History”** page.
 2. Find the publisher in the list, using search if needed.
 3. Click the name for their statistics and full history.
 4. Click a different name to switch to that publisher.
 
 ### 8.2. Heatmap (“Who gave parts and when”)
 
-![The “📊 Statistics” tab](../ru/screenshots/statistika.png)
+![The “📊 Statistics” page](../ru/screenshots/statistika.png)
 
-“📊 Statistics” shows the congregation's workload. Filters appear above a legend and two charts. The first is “Who gave parts and when”, a heatmap.
+The “📊 Statistics” page shows the congregation's workload. Filters appear above a legend and two charts. The first is “Who gave parts and when”, a heatmap.
 
 Filters at the top
 
@@ -869,7 +857,7 @@ Order. The heatmap displays publishers in the order provided by the app.
 
 ### 8.3. Workload charts by assignment category
 
-The second chart in “📊 Statistics”, “Participant workload”, shows the total and mix of each publisher's assignments.
+The second chart on the “📊 Statistics” page, “Participant workload”, shows the total and mix of each publisher's assignments.
 
 Reading the chart
 
@@ -1096,15 +1084,15 @@ How checking works. The app reads replies in the background, matches each recogn
 
 ## 10. Exporting and printing
 
-Export actions are on the “📅 Schedule” toolbar beside the date navigation and “🪄 Auto-assign”. Exports that take time run in the background. You can switch tabs and see a result when the export finishes. Printouts and S-89 slips use the interface language.
+Open “📤 Export” on the “📅 Schedule” toolbar. The menu offers “📕 PDF…”, “📄 Word (DOCX)…”, “📝 TXT…”, and, after a separator, “🎟️ S-89 slips…”. The button tooltip reads “Save the schedule to a file: PDF, Word, TXT or S-89 slips”. Exports that take time run in the background. You can switch tabs and see a result when the export finishes. Printouts and S-89 slips use the interface language.
 
 “Select weeks for export” lists weeks by year and month, with the open week already checked. Check one or more weeks and click the format or confirmation button to choose a filename and location. An empty selection prompts “Select at least one week!” in an “Attention” dialog.
 
 ### 10.1. Printing and quick export to PDF and TXT
 
-To print on a computer, click **“🖨️ Print”** or press **Ctrl+P**. Check the weeks to print. Choose a printer in the system dialog and click **“Print”**. On a tablet, save the schedule as a PDF and print that file.
+To print on a computer, click **“🖨️ Print”** or press **Ctrl+P**. In a narrow window, choose **“🖨️ Print…”** from **“📤 Export”**. Check the weeks to print. Choose a printer in the system dialog and click **“Print”**. On a tablet, save the schedule as a PDF and print that file.
 
-1. Click **“📕 PDF”** or **“📝 TXT”** on the “📅 Schedule” toolbar. In compact mode, open **“⋯ More”** and choose **“📕 PDF…”** or **“📝 TXT…”** (chapter 12.2). “Select weeks for export” opens.
+1. On the “📅 Schedule” toolbar, open **“📤 Export”** and choose **“📕 PDF…”** or **“📝 TXT…”**. “Select weeks for export” opens.
 2. Check the weeks to export.
 3. Click **“📕 PDF”** or **“📝 Text (TXT)”**. The dialog shows the button for the format you chose.
 4. Choose a filename and folder.
@@ -1118,9 +1106,9 @@ The save dialog offers “PDF document (*.pdf)” or “Text file (*.txt)”. If
 
 ### 10.2. Exporting the schedule to Word (.docx)
 
-Choose **“📄 Word (DOCX)…”** from “⋯ More” on the schedule toolbar.
+Choose **“📄 Word (DOCX)…”** from “📤 Export” on the schedule toolbar.
 
-1. Open **“⋯ More”** → “📄 Word (DOCX)…” to select weeks.
+1. Open **“📤 Export”** → “📄 Word (DOCX)…” to select weeks.
 2. Check the weeks.
 3. Click **“📄 Word (DOCX)”**.
 4. Review the filename and location and click **“Save”**. The name follows the PDF pattern, for example `December 2026 Life and Ministry Meeting schedule 13.11.2026.docx` (section 10.1).
@@ -1136,7 +1124,7 @@ Which parts get slips. The S-89 form is for student assignments. The app exclude
 
 Selected weeks
 
-1. On the schedule toolbar, open **“⋯ More”** → “🎟️ S-89 slips…”.
+1. On the schedule toolbar, open **“📤 Export”** → “🎟️ S-89 slips…”.
 2. In “S-89 slips — select weeks”, check one or more weeks.
 3. Click **“🎟️ Generate S-89”**.
 4. Review the filename and location and click **“Save”**. The default is `S-89_DD.MM-DD.MM.docx`, from the first selected week's start to the last selected week's end.
@@ -1334,8 +1322,8 @@ Finger scrolling. Drag the content directly in lists, tables, and scrollable are
 * The date tree in “📅 Schedule”.
 * The weekly schedule table.
 * The month board.
-* The “👥 Publishers” table and the publisher list in “🕒 History”.
-* The scrollable areas of “📊 Statistics”, “⚙️ Settings”, and “🏠 Today”.
+* The “👥 Publishers” table and the publisher list on the “🕒 History” page.
+* The scrollable areas of the “📊 Statistics” page, “⚙️ Settings”, and “🏠 Today”.
 * Dialogs with lists, such as participant selection and notifications.
 
 The app treats a finger drag like a left-button drag. Areas that scroll with the mouse wheel on a computer can be scrolled with a finger on a tablet.
@@ -1353,12 +1341,12 @@ Maximized window. The tablet version opens maximized to use as much screen space
 
 The same assignment rules (chapter 7), conflict warnings (chapter 6.2), and reply markers (chapter 9.6) apply on tablets.
 
-### 12.2. Adaptive toolbar (“⋯ More”)
+### 12.2. Adaptive toolbar (“📤 Export”)
 
-On narrow screens, “🪄 Auto-assign” is shortened to “🪄 Auto”. To export the schedule, open **“⋯ More”** and select **“📕 PDF…”** or “📝 TXT…”. On desktop, the menu also offers “🖨️ Print…”. The individual buttons return when the toolbar has room. See chapter 10.1 for selecting weeks and saving the file.
+On narrow screens, “🪄 Auto-assign” is shortened to “🪄 Auto”, and “🖨️ Print…” moves into the **“📤 Export”** menu. The separate “🖨️ Print” button returns when the toolbar has room. See chapter 10.1 for selecting weeks and saving the file.
 
 In “Month” view, “➕ Part” and “🗑️ Clear” are hidden. See chapter 6.7 for undo and redo. The toolbar tooltips change with the view. For example, “‹” shows “Previous week (Alt+←)” in week view and “Previous month (Alt+←)” in month view. On a tablet, tap **“‹”** or “›” to move between weeks or months.
 
 Open **“📨 Notify”** with the arrow next to the button. The menu includes “📋 Notification log” and “📥 Check replies”.
 
-Scroll “🏠 Today”, “⚙️ Settings”, and “📊 Statistics” with your finger (chapter 12.1). For computer sync, see chapter 11.5.
+Scroll “🏠 Today”, “⚙️ Settings”, and the “📊 Statistics” page with your finger (chapter 12.1). For computer sync, see chapter 11.5.

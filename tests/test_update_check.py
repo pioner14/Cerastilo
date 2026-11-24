@@ -1,3 +1,4 @@
+import ssl
 import io
 import json
 import tomllib
@@ -38,7 +39,8 @@ def test_parse_and_compare_versions():
 def test_fetch_latest(monkeypatch):
     url = "https://github.com/pioner14/Cerastilo/releases/tag/v0.1.1"
 
-    def urlopen(request, timeout):
+    def urlopen(request, timeout, context):
+        assert isinstance(context, ssl.SSLContext)  # свой контекст: на Android — CA системы
         assert request.full_url == update_check.GITHUB_LATEST_URL
         assert request.get_header("Accept") == "application/vnd.github+json"
         assert request.get_header("User-agent") == f"Cerastilo/{APP_VERSION}"

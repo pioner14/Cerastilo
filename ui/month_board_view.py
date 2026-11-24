@@ -572,78 +572,9 @@ class MonthBoardView(QWidget):
             title = QLabel(escape(self.title))
             title.setObjectName("headerLabel")
             self.summary_layout.addWidget(title)
-        board = self.board
-        if not board:
-            return
-        pal = palette()
-        s = board["summary"]
-        chips = [
-            (
-                _("Назначено {v} из {v2}", v=s["assigned"], v2=s["total"]),
-                pal.text_success if s["assigned"] >= s["total"] else pal.text_warning,
-            ),
-            (_("Пустых: {v}", v=s["empty"]), pal.text_error if s["empty"] else pal.text_success),
-            (
-                _("Дважды за неделю: {v}", v=s["double"]),
-                pal.text_error if s["double"] else pal.text_success,
-            ),
-            (
-                _("Подряд две недели: {v}", v=s["consecutive"]),
-                pal.text_warning if s["consecutive"] else pal.text_success,
-            ),
-        ]
-        away = sum("away" in cell["flags"] for row in board["cells"] for cell in row if cell)
-        if away:
-            chips.append((_("В отпуске, нужна замена: {away}", away=away), pal.text_error))
-        n = board.get("notice_summary") or {}
-        if n.get("declined"):
-            chips.append((_("Не смогут: {v}", v=n["declined"]), pal.text_error))
-        # «Не уведомлено» — не предупреждение (о заданиях сообщают листками),
-        # рассылка остаётся в меню клетки: «✉️ Уведомить месяц».
-        if n.get("waiting"):
-            chips.append((_("Ждут ответа: {v}", v=n["waiting"]), pal.text_secondary))
-        if s.get("elder_student"):  # допустимо, но стоит видеть — только когда есть
-            chips.append((_("Старейшины на учебных: {v}", v=s["elder_student"]), pal.text_warning))
-        notes = []
-        for column in board["columns"]:
-            if column["special"]:
-                start = column["start_date"]
-                notes.append(
-                    (
-                        _(
-                            "{v} — {v2}, не распределяется",
-                            v=start.strftime("%d.%m") if start else "",
-                            v2=column["special"],
-                        ),
-                        pal.text_secondary,
-                    )
-                )
-        for box, items in ((self.summary_layout, chips), (self.notes_layout, notes)):
-            for text, color in items:
-                chip = QLabel(f'<span style="color:{color}">●</span> {escape(text)}')
-                chip.setTextFormat(Qt.TextFormat.RichText)
-                chip.setObjectName("monthSummaryChip")
-                box.addWidget(chip)
+        # Только название месяца: сводку («Назначено…», «Пустых…») и легенду
+        # убрали по просьбе владельца — это видно по цвету клеток и в подсказке
         self.summary_layout.addStretch(1)
-        legend = QLabel(
-            _(
-                '<span style="color:{text_success}">●</span> давно не выступал или новый &nbsp; <span style="color:{text_warning}">●</span> меньше 4 нед. назад &nbsp; <span style="background:{notice_waiting_background}">&nbsp;⏳ ждём ответа&nbsp;</span> &nbsp; <span style="background:{notice_confirmed_background}">&nbsp;✅ подтвердил&nbsp;</span> &nbsp; <span style="background:{conflict_background}">&nbsp;❌ не сможет / 🏖️ в отпуске&nbsp;</span>',
-                text_success=pal.text_success,
-                text_warning=pal.text_warning,
-                notice_waiting_background=pal.notice_waiting_background,
-                notice_confirmed_background=pal.notice_confirmed_background,
-                conflict_background=pal.conflict_background,
-            )
-        )
-        legend.setTextFormat(Qt.TextFormat.RichText)
-        legend.setToolTip(
-            _(
-                "У старейшин точки нет: они выступают почти каждую неделю.\n"
-                "«Подряд» отмечается тоже только у тех, кто не старейшина."
-            )
-        )
-        self.notes_layout.addStretch(1)
-        self.notes_layout.addWidget(legend)
 
     # --- действия ---
 

@@ -40,11 +40,10 @@ For blank templates for a future year, click **“➕ Future year”** below the
 
 ## Step 5. Export the schedule
 
-1. Choose a format from the “📅 Schedule” toolbar.
-   - Click **“📕 PDF”** to share or print the schedule, or **“📝 TXT”** for plain text.
-   - If the toolbar is compact, open **“⋯ More”** and select **“📕 PDF…”** or **“📝 TXT…”**.
-   - For a Word schedule, choose **“📄 Word (DOCX)…”** in “⋯ More”.
-   - For individual student assignment slips, choose **“🎟️ S-89 slips…”** in the same menu.
+1. On the “📅 Schedule” toolbar, open **“📤 Export”**.
+   - Choose **“📕 PDF…”** to share or print the schedule, or **“📝 TXT…”** for plain text.
+   - For a Word schedule, choose **“📄 Word (DOCX)…”**.
+   - For individual student assignment slips, choose **“🎟️ S-89 slips…”**.
 2. Check the weeks to include.
 3. Click the confirmation button to open the save dialog.
 4. Save the file. The suggested schedule filename includes the month and year, meeting name, and export date.

@@ -11,6 +11,7 @@ from tempfile import NamedTemporaryFile
 from urllib.parse import urlsplit
 
 from core.i18n import _settings_dir
+from core.tls import create_default_context
 from core.version import APP_VERSION
 
 logger = logging.getLogger(__name__)
@@ -48,7 +49,9 @@ def fetch_latest(timeout=8) -> dict | None:
                 "User-Agent": f"Cerastilo/{APP_VERSION}",
             },
         )
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        with urllib.request.urlopen(
+            request, timeout=timeout, context=create_default_context()
+        ) as response:
             release = json.load(response)
         version = parse_version(release["tag_name"])
         url = release["html_url"]
@@ -59,7 +62,7 @@ def fetch_latest(timeout=8) -> dict | None:
             raise ValueError("Некорректная ссылка на релиз")
         return {"version": ".".join(map(str, version)), "url": url}
     except Exception:
-        logger.debug("Не удалось получить последний релиз", exc_info=True)
+        logger.warning("Не удалось получить последний релиз", exc_info=True)
         return None
 
 
