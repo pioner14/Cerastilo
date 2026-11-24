@@ -2,12 +2,6 @@ name: Сборка для Windows
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: Версия для имени архива
-        required: true
-        default: '0.2.0'
-        type: string
 
 concurrency:
   group: build-${{ github.ref }}
@@ -18,6 +12,16 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Чтение версии приложения
+        id: ver
+        shell: pwsh
+        run: |
+          $versionFile = Get-Content -Raw core/version.py
+          if ($versionFile -notmatch '(?m)^APP_VERSION[ \t]*=[ \t]*"(\d+\.\d+\.\d+)"[ \t]*\r?$') {
+            throw "Не удалось прочитать APP_VERSION из core/version.py"
+          }
+          "version=$($Matches[1])" >> $env:GITHUB_OUTPUT
 
       - uses: actions/setup-python@v5
         with:
@@ -30,15 +34,58 @@ jobs:
       - name: Сборка PyInstaller
         run: python -m PyInstaller --noconfirm packaging/pyinstaller/cerastilo.spec
 
-      - name: Упаковка ZIP
+      - name: Упаковка ZIP (портативная версия)
         shell: pwsh
         env:
-          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_VERSION: ${{ steps.ver.outputs.version }}
         run: Compress-Archive -Path dist/cerastilo -DestinationPath "Cerastilo-$env:RELEASE_VERSION-windows-x64.zip"
+
+      - name: Установка Inno Setup
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) {
+            choco install innosetup -y --no-progress
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+
+      - name: Сборка установщика
+        shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          $ver = $env:RELEASE_VERSION
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /DAppVersion=$ver packaging\inno\cerastilo.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Проверка установщика
+        shell: pwsh
+        env:
+          RELEASE_VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          $ver = $env:RELEASE_VERSION
+          $install = Start-Process -FilePath "dist\Cerastilo-$ver-Setup.exe" -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DIR="C:\CerastiloTest"' -Wait -PassThru
+          if ($install.ExitCode -ne 0) { throw "Код завершения установщика $($install.ExitCode)" }
+          if (-not (Test-Path 'C:\CerastiloTest\cerastilo.exe' -PathType Leaf)) {
+            throw "После установки отсутствует cerastilo.exe"
+          }
+
+          $uninstall = Start-Process -FilePath 'C:\CerastiloTest\unins000.exe' -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES' -Wait -PassThru
+          if ($uninstall.ExitCode -ne 0) { throw "Код завершения удаления $($uninstall.ExitCode)" }
+          Start-Sleep -Seconds 5
+          if (Test-Path 'C:\CerastiloTest\cerastilo.exe') {
+            throw "После удаления остался cerastilo.exe"
+          }
 
       - name: Загрузка артефакта
         uses: actions/upload-artifact@v4
         with:
-          name: Cerastilo-${{ inputs.version }}-windows-x64
-          path: Cerastilo-${{ inputs.version }}-windows-x64.zip
+          name: Cerastilo-${{ steps.ver.outputs.version }}-windows-x64
+          path: Cerastilo-${{ steps.ver.outputs.version }}-windows-x64.zip
+          if-no-files-found: error
+
+      - name: Загрузка установщика
+        uses: actions/upload-artifact@v4
+        with:
+          name: Cerastilo-${{ steps.ver.outputs.version }}-Setup
+          path: dist/Cerastilo-${{ steps.ver.outputs.version }}-Setup.exe
           if-no-files-found: error

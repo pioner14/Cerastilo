@@ -43,10 +43,10 @@ Cerastilo — неофициальное приложение для плани�
 
 ## Установка из готовых сборок
 
-ZIP, AppImage и APK ищите на странице [последнего релиза](https://github.com/pioner14/Cerastilo/releases/latest).
+Установщик и ZIP для Windows, AppImage и APK ищите на странице [последнего релиза](https://github.com/pioner14/Cerastilo/releases/latest).
 
 - **Linux.** На Arch Linux установите пакет из AUR командой `yay -S cerastilo`. Для AppImage выполните в папке загрузки `chmod +x Cerastilo-*.AppImage`, затем откройте файл двойным щелчком.
-- **Windows.** Распакуйте ZIP целиком и запустите `cerastilo.exe`. Остальные файлы в распакованной папке не перемещайте и не удаляйте. Данные хранятся в `%LOCALAPPDATA%\Cerastilo`.
+- **Windows.** Есть два файла. `Cerastilo-<версия>-Setup.exe` — установщик: ставит программу в `Program Files`, добавляет её в меню «Пуск» (по желанию — и на рабочий стол), удаляется через «Параметры» → «Приложения». `Cerastilo-<версия>-windows-x64.zip` — портативная версия без установки: распакуйте ZIP целиком и запускайте `cerastilo.exe`, остальные файлы в распакованной папке не перемещайте и не удаляйте. В обоих случаях данные хранятся в `%LOCALAPPDATA%\Cerastilo` (общие для обеих версий) и при удалении программы остаются. Если Windows покажет окно «Система Windows защитила ваш компьютер», нажмите «Подробнее» → «Выполнить в любом случае»: окно появляется, потому что программа пока не подписана цифровой подписью. Установщик ещё спросит разрешение на изменения от «неизвестного издателя» — нажмите «Да».
 - **Android-планшеты (arm64).** Установите APK.
 
 ## Синхронизация ПК ↔ планшет
@@ -138,10 +138,10 @@ Cerastilo is an unofficial app for planning the Christian Life & Ministry meetin
 
 ## Installing official builds
 
-Look for the ZIP, AppImage, and APK on the [latest release page](https://github.com/pioner14/Cerastilo/releases/latest).
+Look for the Windows installer and ZIP, the AppImage, and the APK on the [latest release page](https://github.com/pioner14/Cerastilo/releases/latest).
 
 - **Linux.** On Arch Linux, install the AUR package with `yay -S cerastilo`. For the AppImage, run `chmod +x Cerastilo-*.AppImage` in your download folder, then double-click the file to launch it.
-- **Windows.** Extract the entire ZIP and launch `cerastilo.exe`. Keep the other files in the extracted folder and do not move or delete them. Data is stored in `%LOCALAPPDATA%\Cerastilo`.
+- **Windows.** There are two files. `Cerastilo-<version>-Setup.exe` is the installer: it installs the app to `Program Files`, adds it to the Start menu (and, optionally, the desktop), and can be removed in Settings → Apps. `Cerastilo-<version>-windows-x64.zip` is the portable version that needs no installation: extract the entire ZIP and launch `cerastilo.exe`; keep the other files in the extracted folder and do not move or delete them. Both versions store data in `%LOCALAPPDATA%\Cerastilo` (shared between them), and uninstalling keeps it. If Windows shows “Windows protected your PC”, click “More info” → “Run anyway”: the warning appears because the app is not digitally signed yet. The installer also asks to allow changes from an “Unknown publisher”; click “Yes”.
 - **Android tablets (arm64).** Install the APK.
 
 ## Computer ↔ tablet sync

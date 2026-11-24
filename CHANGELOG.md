@@ -7,6 +7,20 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ## [Unreleased]
 
+## [0.2.1] — 2026-11-24
+
+### Добавлено / Added
+
+- Windows: установщик `Cerastilo-0.2.1-Setup.exe` — ставит программу в Program Files, добавляет её в меню «Пуск», удаляется через «Параметры» → «Приложения». ZIP остаётся как портативная версия без установки. Данные обеих версий — в `%LOCALAPPDATA%\Cerastilo`, при удалении программы они сохраняются.
+- Windows: the `Cerastilo-0.2.1-Setup.exe` installer installs the app to Program Files, adds it to the Start menu and can be removed in Settings → Apps. The ZIP stays as the portable version that needs no installation. Both store data in `%LOCALAPPDATA%\Cerastilo`, which is kept when the app is uninstalled.
+- README, INSTALL и справка: как запустить программу, если Windows пишет «Система Windows защитила ваш компьютер» («Подробнее» → «Выполнить в любом случае»).
+- README, INSTALL and help: how to start the app when Windows shows “Windows protected your PC” (“More info” → “Run anyway”).
+
+### Исправлено / Fixed
+
+- Windows: служебный журнал «Авто» теперь пишется в папку данных, а не в папку программы (из Program Files писать нельзя).
+- Windows: the auto-assign log is now written to the data folder instead of the program folder (Program Files is not writable).
+
 ## [0.2.0] — 2026-11-24
 
 ### Изменено / Changed
@@ -100,7 +114,8 @@ First public release of Cerastilo, a "Life and Ministry" meeting scheduler for P
 - Data: Linux — `~/.local/share/cerastilo`, Windows — `%LOCALAPPDATA%\Cerastilo`.
 - License: source-available, see `LICENSE`.
 
-[Unreleased]: https://github.com/pioner14/Cerastilo/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/pioner14/Cerastilo/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/pioner14/Cerastilo/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/pioner14/Cerastilo/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/pioner14/Cerastilo/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/pioner14/Cerastilo/releases/tag/v0.1.0

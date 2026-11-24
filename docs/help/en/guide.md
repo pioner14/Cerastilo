@@ -96,6 +96,8 @@ The crash log (`crash.log`) is written to the application folder on a computer o
 
 Computer (Windows, Linux, macOS). The desktop version includes all tabs. The window opens maximized except on macOS, where it opens at its normal size. The minimum size is 1000×700 pixels, suitable for a typical monitor or laptop. The status bar shows “Done” when the app starts.
 
+On Windows there are two options. The `Cerastilo-<version>-Setup.exe` installer installs the app and adds it to the Start menu; remove it in Settings → Apps. The portable version is a ZIP that needs no installation: extract the entire ZIP and launch `cerastilo.exe`. Both versions store data in `%LOCALAPPDATA%\Cerastilo`, and uninstalling keeps it. If Windows shows “Windows protected your PC”, click “More info” → “Run anyway”: the warning appears because the app is not digitally signed yet. The installer also asks to allow changes from an “Unknown publisher”; click “Yes”.
+
 Android tablet. Android uses the same main window and tabs, with adaptations for touch.
 
 * Scroll lists and tables by dragging anywhere in the scroll area.

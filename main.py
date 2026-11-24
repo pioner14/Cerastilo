@@ -5,6 +5,9 @@ if sys.platform == "win32" and getattr(sys, "frozen", False) and "DB_PATH" not i
     data_dir = os.path.join(os.environ["LOCALAPPDATA"], "Cerastilo")
     os.makedirs(data_dir, exist_ok=True)
     os.environ["DB_PATH"] = os.path.join(data_dir, "scheduler.db")
+    # Из установщика программа стоит в Program Files, куда писать нельзя:
+    # служебные файлы с относительным путём (auto_assign_debug.log) — в папку данных.
+    os.chdir(data_dir)
 
 from PySide6.QtCore import QTimer, QUrl, Qt
 from PySide6.QtGui import QDesktopServices, QKeySequence, QShortcut
